@@ -1,0 +1,77 @@
+[gd_scene format=3 uid="uid://bqx8m2n4k5pwr"]
+
+[ext_resource type="Script" path="res://scripts/ui/TitleScreen.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/ui/SunNode.gd" id="2_sun"]
+[ext_resource type="Script" path="res://scripts/ui/MoonNode.gd" id="3_moon"]
+[ext_resource type="Texture2D" path="res://assets/images/logo.png" id="4_logo"]
+[ext_resource type="Shader" path="res://assets/shaders/invert_color.gdshader" id="5_invert"]
+
+[sub_resource type="ShaderMaterial" id="Material_invert"]
+shader = ExtResource("5_invert")
+
+[node name="TitleScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_script")
+
+[node name="BgRect" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(1, 1, 1, 1)
+
+[node name="EclipseLayer" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="SunNode" type="Node2D" parent="EclipseLayer"]
+position = Vector2(960, 180)
+script = ExtResource("2_sun")
+
+[node name="MoonNode" type="Node2D" parent="EclipseLayer/SunNode"]
+position = Vector2(-120, 40)
+script = ExtResource("3_moon")
+
+[node name="LogoLayer" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = 80.0
+offset_right = 200.0
+offset_bottom = 280.0
+
+[node name="LogoImage" type="TextureRect" parent="LogoLayer"]
+custom_minimum_size = Vector2(400, 0)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -200.0
+offset_top = -50.0
+offset_right = 200.0
+offset_bottom = 50.0
+expand_mode = 3
+stretch_mode = 5
+texture = ExtResource("4_logo")
+material = SubResource("Material_invert")
+
+[node name="PressAnyKey" type="Label" parent="."]
+layout_mode = 0
+offset_left = 810.0
+offset_top = 980.0
+offset_right = 1110.0
+offset_bottom = 1010.0
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+text = "Press Any Key"
+horizontal_alignment = 1
+vertical_alignment = 1
