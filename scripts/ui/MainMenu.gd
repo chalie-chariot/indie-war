@@ -1,46 +1,51 @@
 extends Control
-## MainMenu - 메인 메뉴 UI (참고 이미지 스펙)
+## MainMenu - 메인 메뉴 UI (좌우 화살표 + 인디케이터 도트)
 
-# 좌측 0~400 캐릭터 영역, 우측 400~ 반원 영역
-# 원 중심: 화면 X 1300, Y 1180 | 지름 1200
-const CIRCLE_CENTER_X := 1300.0
-const RIGHT_AREA_LEFT := 400
+const RIGHT_AREA_LEFT: int = 400
 
-# 버튼: 화면 절대좌표 (중심점) - 반원 호 안쪽, Y 1080 이내
-const BUTTON_CENTERS_SCREEN: Array[Vector2] = [
-	Vector2(1300, 430),   # 1: 반원 최상단 중앙
-	Vector2(1100, 530),   # 2: 좌측 상단
-	Vector2(1500, 530),   # 3: 우측 상단
-	Vector2(1050, 680),   # 4: 좌측 하단
-	Vector2(1550, 680),   # 5: 우측 하단
-	Vector2(1300, 750)    # 6: 중앙 하단
+var menus: Array[String] = [
+	"게임 시작",
+	"신 선택",
+	"스테이지 선택",
+	"용병 도감",
+	"설정",
+	"종료"
 ]
-const BUTTON_SIZE := 36
+var current_index: int = 0
 
 @onready var logo_placeholder: ColorRect = $RightArea/TitleArea/LogoRow/LogoWrapper/LogoPlaceholder
-@onready var title_label: Label = $RightArea/TitleArea/TitleLabel
-@onready var menu_buttons: Control = $RightArea/MenuButtons
-@onready var btn_list: Array[Control] = [
-	$RightArea/MenuButtons/Btn1,
-	$RightArea/MenuButtons/Btn2,
-	$RightArea/MenuButtons/Btn3,
-	$RightArea/MenuButtons/Btn4,
-	$RightArea/MenuButtons/Btn5,
-	$RightArea/MenuButtons/Btn6
-]
+@onready var title_label: Label = $RightArea/TitleArea/TitleRowWrapper/TitleRow/TitleLabel
+@onready var prev_btn: Control = $RightArea/TitleArea/TitleRowWrapper/TitleRow/PrevBtn
+@onready var next_btn: Control = $RightArea/TitleArea/TitleRowWrapper/TitleRow/NextBtn
+@onready var indicator_dots: Control = $RightArea/IndicatorDots
+@onready var eclipse_circle: Control = $RightArea/EclipseCircle
+@onready var divider_glow: Control = $RightArea/TitleArea/TitleRowWrapper
 
 func _ready() -> void:
 	_apply_fonts()
-	_connect_buttons()
-	_update_logo_placeholder(1)
-	call_deferred("_arrange_menu_buttons")
-	if btn_list.size() > 0 and btn_list[0].has_method("set_selected"):
-		btn_list[0].set_selected(true)
+	prev_btn.pressed.connect(_on_prev_pressed)
+	next_btn.pressed.connect(_on_next_pressed)
+	_update_ui()
+	if indicator_dots and indicator_dots.has_method("set_active_index"):
+		indicator_dots.set_active_index(current_index)
+	if eclipse_circle and eclipse_circle.has_method("set_active_index"):
+		eclipse_circle.set_active_index(current_index)
+
+func _input(event: InputEvent) -> void:
+	if event is InputEventKey:
+		var ke: InputEventKey = event as InputEventKey
+		if ke.pressed and not ke.echo:
+			if ke.keycode == KEY_ENTER or ke.keycode == KEY_KP_ENTER or ke.keycode == KEY_SPACE:
+				_execute_current_menu()
+			elif ke.keycode == KEY_LEFT or ke.keycode == KEY_A:
+				_on_prev_pressed()
+			elif ke.keycode == KEY_RIGHT or ke.keycode == KEY_D:
+				_on_next_pressed()
 
 func _apply_fonts() -> void:
 	var black_han: Font = _load_font("res://assets/fonts/BlackHanSans-Regular.ttf")
 	if black_han:
-		for node in [title_label, $LeftArea/CharInfoRow/CharInfoLabel, $RightArea/WorldContainer/WorldLabel]:
+		for node in [title_label]:
 			if is_instance_valid(node):
 				node.add_theme_font_override("font", black_han)
 
@@ -49,37 +54,42 @@ func _load_font(path: String) -> Font:
 		return null
 	return load(path) as Font
 
-func _arrange_menu_buttons() -> void:
-	if not menu_buttons or btn_list.is_empty():
-		return
-	for i in btn_list.size():
-		var center_screen: Vector2 = BUTTON_CENTERS_SCREEN[i]
-		var pos: Vector2 = Vector2(center_screen.x - RIGHT_AREA_LEFT, center_screen.y) - Vector2(BUTTON_SIZE / 2, BUTTON_SIZE / 2)
-		btn_list[i].position = pos
-		btn_list[i].size = Vector2(BUTTON_SIZE, BUTTON_SIZE)
+func _on_prev_pressed() -> void:
+	current_index -= 1
+	if current_index < 0:
+		current_index = 5
+	if divider_glow and divider_glow.has_method("animate_right_to_left"):
+		divider_glow.animate_right_to_left()
+	_update_ui()
 
-func _connect_buttons() -> void:
-	for btn in btn_list:
-		if btn.has_signal("pressed"):
-			btn.pressed.connect(_on_menu_button_pressed)
+func _on_next_pressed() -> void:
+	current_index += 1
+	if current_index >= 6:
+		current_index = 0
+	if divider_glow and divider_glow.has_method("animate_left_to_right"):
+		divider_glow.animate_left_to_right()
+	_update_ui()
 
-func _on_menu_button_pressed(index: int) -> void:
-	for i in btn_list.size():
-		if btn_list[i].has_method("set_selected"):
-			btn_list[i].set_selected(i + 1 == index)
-	_update_logo_placeholder(index)
-	match index:
-		1:
+func _update_ui() -> void:
+	_update_logo_placeholder(current_index + 1)
+	if indicator_dots and indicator_dots.has_method("set_active_index"):
+		indicator_dots.set_active_index(current_index)
+	if eclipse_circle and eclipse_circle.has_method("set_active_index"):
+		eclipse_circle.set_active_index(current_index)
+
+func _execute_current_menu() -> void:
+	match current_index:
+		0:
 			get_tree().change_scene_to_file("res://scenes/game/GameManager.tscn")
-		2:
+		1:
 			print("신 선택 미구현")
-		3:
+		2:
 			print("스테이지 선택 미구현")
-		4:
+		3:
 			print("용병 도감 미구현")
-		5:
+		4:
 			print("설정 미구현")
-		6:
+		5:
 			get_tree().quit()
 
 func _update_logo_placeholder(menu_num: int) -> void:

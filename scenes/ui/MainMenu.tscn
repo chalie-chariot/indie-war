@@ -1,9 +1,13 @@
-[gd_scene load_steps=4 format=3 uid="uid://bqm4xr8n2y5pw"]
+[gd_scene load_steps=8 format=3 uid="uid://bqm4xr8n2y5pw"]
 
 [ext_resource type="Script" path="res://scripts/ui/MainMenu.gd" id="1_menu"]
 [ext_resource type="Script" path="res://scripts/ui/BgGradient.gd" id="2_bggrad"]
 [ext_resource type="Script" path="res://scripts/ui/EclipseCircle.gd" id="3_eclipse"]
-[ext_resource type="Script" path="res://scripts/ui/MenuButton.gd" id="4_menubtn"]
+[ext_resource type="Script" path="res://scripts/ui/NavCircleButton.gd" id="4_nav"]
+[ext_resource type="Script" path="res://scripts/ui/IndicatorDots.gd" id="5_dots"]
+[ext_resource type="Script" path="res://scripts/ui/DividerGlow.gd" id="6_divider"]
+[ext_resource type="Script" path="res://scripts/ui/DividerLine.gd" id="7_line"]
+[ext_resource type="Script" path="res://scripts/ui/LineEndCircle.gd" id="8_circle"]
 
 [node name="MainMenu" type="Control"]
 layout_mode = 3
@@ -68,27 +72,6 @@ theme_override_font_sizes/font_size = 12
 text = "spine character_idle"
 horizontal_alignment = 1
 
-[node name="CharInfoRow" type="HBoxContainer" parent="LeftArea"]
-layout_mode = 1
-anchors_preset = 12
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 30.0
-offset_top = -72.0
-offset_right = 220.0
-theme_override_constants/separation = 8
-
-[node name="CharInfoPlaceholder" type="ColorRect" parent="LeftArea/CharInfoRow"]
-custom_minimum_size = Vector2(36, 36)
-layout_mode = 2
-color = Color(1, 1, 1, 1)
-
-[node name="CharInfoLabel" type="Label" parent="LeftArea/CharInfoRow"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-text = "캐릭터 정보"
-
 [node name="RightArea" type="Control" parent="."]
 layout_mode = 1
 anchors_preset = 4
@@ -103,10 +86,10 @@ grow_vertical = 2
 [node name="TitleArea" type="VBoxContainer" parent="RightArea"]
 layout_mode = 1
 offset_left = 580.0
-offset_top = 60.0
+offset_top = 140.0
 offset_right = 1220.0
 offset_bottom = 320.0
-theme_override_constants/separation = 20
+theme_override_constants/separation = 8
 alignment = 1
 
 [node name="LogoRow" type="HBoxContainer" parent="RightArea/TitleArea"]
@@ -156,34 +139,56 @@ text = "◇"
 custom_minimum_size = Vector2(0, 20)
 layout_mode = 2
 
-[node name="TitleLabel" type="Label" parent="RightArea/TitleArea"]
+[node name="TitleRowWrapper" type="HBoxContainer" parent="RightArea/TitleArea"]
+custom_minimum_size = Vector2(640, 80)
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 4
+script = ExtResource("6_divider")
+
+[node name="LeftCircle" type="Control" parent="RightArea/TitleArea/TitleRowWrapper"]
+layout_mode = 2
+script = ExtResource("8_circle")
+
+[node name="LineLeft" type="Control" parent="RightArea/TitleArea/TitleRowWrapper"]
+custom_minimum_size = Vector2(80, 80)
+layout_mode = 2
+size_flags_horizontal = 3
+script = ExtResource("7_line")
+
+[node name="TitleRow" type="HBoxContainer" parent="RightArea/TitleArea/TitleRowWrapper"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 24
+
+[node name="PrevBtn" type="Control" parent="RightArea/TitleArea/TitleRowWrapper/TitleRow"]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+script = ExtResource("4_nav")
+is_prev = true
+
+[node name="TitleLabel" type="Label" parent="RightArea/TitleArea/TitleRowWrapper/TitleRow"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 80
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 text = "계승전"
 horizontal_alignment = 1
 
-[node name="DividerRow" type="HBoxContainer" parent="RightArea/TitleArea"]
+[node name="NextBtn" type="Control" parent="RightArea/TitleArea/TitleRowWrapper/TitleRow"]
+custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
-alignment = 1
-theme_override_constants/separation = 220
+script = ExtResource("4_nav")
+is_prev = false
 
-[node name="D3" type="Label" parent="RightArea/TitleArea/DividerRow"]
+[node name="LineRight" type="Control" parent="RightArea/TitleArea/TitleRowWrapper"]
+custom_minimum_size = Vector2(80, 80)
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-text = "◆"
+size_flags_horizontal = 3
+script = ExtResource("7_line")
 
-[node name="Divider" type="ColorRect" parent="RightArea/TitleArea/DividerRow"]
-custom_minimum_size = Vector2(400, 1)
+[node name="RightCircle" type="Control" parent="RightArea/TitleArea/TitleRowWrapper"]
 layout_mode = 2
-color = Color(1, 1, 1, 1)
-
-[node name="D4" type="Label" parent="RightArea/TitleArea/DividerRow"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 20
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-text = "◆"
+script = ExtResource("8_circle")
 
 [node name="EclipseCircle" type="Control" parent="RightArea"]
 layout_mode = 1
@@ -192,62 +197,16 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 script = ExtResource("3_eclipse")
 
-[node name="MenuButtons" type="Control" parent="RightArea"]
+[node name="IndicatorDots" type="Control" parent="RightArea"]
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
 anchor_bottom = 1.0
-mouse_filter = 2
-
-[node name="Btn1" type="Control" parent="RightArea/MenuButtons"]
-layout_mode = 0
-script = ExtResource("4_menubtn")
-button_index = 1
-
-[node name="Btn2" type="Control" parent="RightArea/MenuButtons"]
-layout_mode = 0
-script = ExtResource("4_menubtn")
-button_index = 2
-
-[node name="Btn3" type="Control" parent="RightArea/MenuButtons"]
-layout_mode = 0
-script = ExtResource("4_menubtn")
-button_index = 3
-
-[node name="Btn4" type="Control" parent="RightArea/MenuButtons"]
-layout_mode = 0
-script = ExtResource("4_menubtn")
-button_index = 4
-
-[node name="Btn5" type="Control" parent="RightArea/MenuButtons"]
-layout_mode = 0
-script = ExtResource("4_menubtn")
-button_index = 5
-
-[node name="Btn6" type="Control" parent="RightArea/MenuButtons"]
-layout_mode = 0
-script = ExtResource("4_menubtn")
-button_index = 6
-
-[node name="WorldContainer" type="HBoxContainer" parent="RightArea"]
-layout_mode = 1
-anchors_preset = 6
-anchor_left = 1.0
-anchor_top = 0.5
-anchor_right = 1.0
-anchor_bottom = 0.5
-offset_left = -220.0
-offset_top = -22.0
-offset_right = -40.0
-theme_override_constants/separation = 8
-
-[node name="WorldLabel" type="Label" parent="RightArea/WorldContainer"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-text = "세계관 개요"
-size_flags_horizontal = 3
-
-[node name="WorldPlaceholder" type="ColorRect" parent="RightArea/WorldContainer"]
-custom_minimum_size = Vector2(36, 36)
-layout_mode = 2
-color = Color(1, 1, 1, 1)
+offset_left = 0.0
+offset_top = -220.0
+offset_right = 280.0
+offset_bottom = -180.0
+grow_vertical = 0
+script = ExtResource("5_dots")
