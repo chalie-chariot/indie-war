@@ -7,9 +7,9 @@ const CENTER_X_OFFSET := 900
 const CENTER_Y := 1180
 const GLOW_OUTER_RANGE := 60
 
-# 반원 곡선(상단 반원) 기준 마름모: LogoRow D1/D2(◇, font_size 18)와 동일 크기
+# 반원 곡선(상단 반원) 기준 마름모
 const DIAMOND_COUNT := 6
-const DIAMOND_SIZE := 9.0  # font 18 ◇ ≈ 18px, 반크기 9
+const DIAMOND_SIZE := 9.0
 const DIAMOND_ARC_OFFSET := 45.0  # 반원과 거리 두기 (바깥쪽으로)
 var _active_diamond: int = 0
 var _animated_diamond: float = 0.0

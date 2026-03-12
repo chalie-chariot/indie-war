@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://bqm4xr8n2y5pw"]
+[gd_scene load_steps=9 format=3 uid="uid://bqm4xr8n2y5pw"]
 
 [ext_resource type="Script" path="res://scripts/ui/MainMenu.gd" id="1_menu"]
 [ext_resource type="Script" path="res://scripts/ui/BgGradient.gd" id="2_bggrad"]
@@ -8,6 +8,7 @@
 [ext_resource type="Script" path="res://scripts/ui/DividerGlow.gd" id="6_divider"]
 [ext_resource type="Script" path="res://scripts/ui/DividerLine.gd" id="7_line"]
 [ext_resource type="Script" path="res://scripts/ui/LineEndCircle.gd" id="8_circle"]
+[ext_resource type="Script" path="res://scripts/ui/WhiteCircleNav.gd" id="9_white"]
 
 [node name="MainMenu" type="Control"]
 layout_mode = 3
@@ -146,9 +147,11 @@ alignment = 1
 theme_override_constants/separation = 4
 script = ExtResource("6_divider")
 
-[node name="LeftCircle" type="Control" parent="RightArea/TitleArea/TitleRowWrapper"]
+[node name="LeftWhiteCircle" type="Control" parent="RightArea/TitleArea/TitleRowWrapper"]
+custom_minimum_size = Vector2(44, 44)
 layout_mode = 2
-script = ExtResource("8_circle")
+script = ExtResource("9_white")
+is_prev = true
 
 [node name="LineLeft" type="Control" parent="RightArea/TitleArea/TitleRowWrapper"]
 custom_minimum_size = Vector2(80, 80)
@@ -186,9 +189,11 @@ layout_mode = 2
 size_flags_horizontal = 3
 script = ExtResource("7_line")
 
-[node name="RightCircle" type="Control" parent="RightArea/TitleArea/TitleRowWrapper"]
+[node name="RightWhiteCircle" type="Control" parent="RightArea/TitleArea/TitleRowWrapper"]
+custom_minimum_size = Vector2(44, 44)
 layout_mode = 2
-script = ExtResource("8_circle")
+script = ExtResource("9_white")
+is_prev = false
 
 [node name="EclipseCircle" type="Control" parent="RightArea"]
 layout_mode = 1
@@ -199,14 +204,9 @@ script = ExtResource("3_eclipse")
 
 [node name="IndicatorDots" type="Control" parent="RightArea"]
 layout_mode = 1
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = 0.0
-offset_top = -220.0
-offset_right = 280.0
-offset_bottom = -180.0
-grow_vertical = 0
+anchors_preset = 0
+offset_left = 800.0
+offset_top = 850.0
+offset_right = 1000.0
+offset_bottom = 1050.0
 script = ExtResource("5_dots")
