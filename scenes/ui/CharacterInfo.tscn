@@ -182,9 +182,9 @@ text_overrun_behavior = 3
 visible = false
 layout_mode = 0
 offset_left = 0.0
-offset_top = 280.0
+offset_top = 630.0
 offset_right = 800.0
-offset_bottom = 420.0
+offset_bottom = 770.0
 script = ExtResource("7_skills")
 
 [node name="StatsPanel" type="Control" parent="LeftArea"]

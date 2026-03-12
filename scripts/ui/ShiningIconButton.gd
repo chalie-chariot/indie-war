@@ -5,16 +5,45 @@ signal clicked
 
 const ICON_SIZE: float = 48.0
 const GLOW_RADIUS: float = 56.0
+const HOVER_SCALE: float = 1.5
+const ROTATION_TURNS: float = 1.0
+const ROTATION_DURATION: float = 1.0
+
+var _hover_tween: Tween
+var _rotate_tween: Tween
 
 func _ready() -> void:
 	custom_minimum_size = Vector2(100, 100)
+	_resize_pivot()
 	mouse_filter = Control.MOUSE_FILTER_STOP
+	resized.connect(_resize_pivot)
 	mouse_entered.connect(_on_hover.bind(true))
 	mouse_exited.connect(_on_hover.bind(false))
 
+func _resize_pivot() -> void:
+	var s := size
+	if s.x <= 0 or s.y <= 0:
+		s = custom_minimum_size
+	pivot_offset = s * 0.5
+
 func _on_hover(enter: bool) -> void:
-	var t := create_tween()
-	t.tween_property(self, "scale", Vector2(1.15, 1.15) if enter else Vector2.ONE, 0.15)
+	_resize_pivot()
+	if _hover_tween:
+		_hover_tween.kill()
+	if _rotate_tween:
+		_rotate_tween.kill()
+	if enter:
+		_hover_tween = create_tween()
+		_hover_tween.tween_property(self, "scale", Vector2(HOVER_SCALE, HOVER_SCALE), 0.2).set_ease(Tween.EASE_OUT)
+		_rotate_tween = create_tween()
+		_rotate_tween.tween_method(_set_rotation, 0.0, ROTATION_TURNS * TAU, ROTATION_DURATION).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_EXPO)
+	else:
+		_hover_tween = create_tween()
+		_hover_tween.tween_property(self, "scale", Vector2.ONE, 0.2).set_ease(Tween.EASE_OUT)
+		rotation = 0.0
+
+func _set_rotation(rad: float) -> void:
+	rotation = rad
 
 func _draw() -> void:
 	var center: Vector2 = size * 0.5

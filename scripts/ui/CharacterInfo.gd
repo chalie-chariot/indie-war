@@ -48,8 +48,14 @@ var _last_scroll: int = -1
 @onready var eclipse_ui: Control = $EclipseUI
 @onready var tab_dots: Node2D = $TabDots
 
+var _char_name_wrapper: Control = null
+
+const NAME_SLIDE_OFFSET: float = 60.0
+const NAME_FADE_DURATION: float = 0.3
+
 func _ready() -> void:
 	_apply_fonts()
+	_setup_char_name_wrapper()
 	# 계기월식·텍스트 박스: 전체적으로 위로
 	if eclipse_ui:
 		eclipse_ui.position = Vector2(380, 200)
@@ -102,6 +108,29 @@ func _apply_fonts() -> void:
 		role_label.add_theme_font_size_override("font_size", 22)
 	if desc_label:
 		desc_label.add_theme_font_size_override("font_size", 20)
+
+func _setup_char_name_wrapper() -> void:
+	var label: Label = char_name_label
+	if not label:
+		return
+	var parent: Control = label.get_parent() as Control
+	if not parent:
+		return
+	_char_name_wrapper = Control.new()
+	_char_name_wrapper.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	_char_name_wrapper.offset_left = 80
+	_char_name_wrapper.offset_top = 240
+	_char_name_wrapper.offset_right = 400
+	_char_name_wrapper.offset_bottom = 300
+	_char_name_wrapper.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	parent.remove_child(label)
+	_char_name_wrapper.add_child(label)
+	parent.add_child(_char_name_wrapper)
+	label.set_anchors_preset(Control.PRESET_FULL_RECT)
+	label.offset_left = 0
+	label.offset_top = 0
+	label.offset_right = 0
+	label.offset_bottom = 0
 
 func _load_font(path: String) -> Font:
 	if not ResourceLoader.exists(path):
@@ -170,12 +199,23 @@ func _update_display() -> void:
 	role_label.text = c["role"]
 	desc_label.text = _truncate_desc_to_fit(c["desc"])
 
-	for label in [char_name_label, role_label]:
-		label.modulate.a = 0.0
-		var t := create_tween()
-		t.tween_property(label, "modulate:a", 1.0, 0.25)
+	# char_name_label: 래퍼 고정, 라벨만 내부에서 오른쪽→왼쪽 슬라이드 + 페이드인
+	if _char_name_wrapper:
+		char_name_label.position = Vector2(NAME_SLIDE_OFFSET, 0)
+		_char_name_wrapper.modulate = Color(1, 1, 1, 0)
+		var t1 := create_tween()
+		t1.set_ease(Tween.EASE_OUT)
+		t1.set_trans(Tween.TRANS_CUBIC)
+		t1.tween_property(char_name_label, "position", Vector2.ZERO, NAME_FADE_DURATION)
+		t1.parallel().tween_property(_char_name_wrapper, "modulate", Color(1, 1, 1, 1), NAME_FADE_DURATION)
+	# role_label: 페이드인만
+	role_label.modulate = Color(1, 1, 1, 0)
+	var t2 := create_tween()
+	t2.set_ease(Tween.EASE_OUT)
+	t2.set_trans(Tween.TRANS_CUBIC)
+	t2.tween_property(role_label, "modulate", Color(1, 1, 1, 1), 0.25)
 	# ScrollContainer 내부 desc_label은 즉시 표시 (페이드인 시 레이아웃 이슈 가능)
-	desc_label.modulate.a = 1.0
+	desc_label.modulate = Color(1, 1, 1, 1)
 
 	# 월식 UI
 	if eclipse_ui and eclipse_ui.has_method("_update_eclipse"):

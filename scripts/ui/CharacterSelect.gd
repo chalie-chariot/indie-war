@@ -40,8 +40,12 @@ const CARD_SCALE_SELECTED: float = 1.0
 const CARD_SCALE_NORMAL: float = 0.7
 const CARD_TWEEN_DURATION: float = 0.06
 
+var _name_wrapper: Control = null
+var _name_tween: Tween = null
+
 func _ready() -> void:
 	_apply_fonts()
+	_setup_name_wrapper()
 	_setup_scroll_container()
 	_setup_edge_bars()
 	_setup_cards()
@@ -100,9 +104,14 @@ func _apply_fonts() -> void:
 func _update_detail_button_position() -> void:
 	if not char_sprite or not detail_button:
 		return
-	var sprite_pos: Vector2 = char_sprite.global_position
-	var sprite_size: Vector2 = char_sprite.size
-	detail_button.global_position = sprite_pos + Vector2(sprite_size.x + 16, -18)
+	var char_display: Control = char_sprite.get_parent() as Control
+	if not char_display:
+		return
+	# 캐릭터 화면 우측 끝 + 여백, 캐릭터와 겹치지 않게
+	const GAP: float = 24.0
+	var right_edge: float = char_display.global_position.x + char_display.size.x
+	detail_button.global_position = Vector2(right_edge + GAP, char_sprite.global_position.y - 18)
+	detail_button.scale = Vector2(1.5, 1.5)  # 마름모·텍스트 함께 1.5배
 
 func _setup_scroll_container() -> void:
 	var panel_style := StyleBoxEmpty.new()
@@ -287,6 +296,29 @@ func _on_right_bar_gui_input(event: InputEvent) -> void:
 				_scroll_to_page(page_index + 1)
 				accept_event()
 
+func _setup_name_wrapper() -> void:
+	var label: Label = char_name_label
+	if not label:
+		return
+	var parent: Control = label.get_parent() as Control
+	if not parent:
+		return
+	_name_wrapper = Control.new()
+	_name_wrapper.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	_name_wrapper.offset_left = 40
+	_name_wrapper.offset_top = 400
+	_name_wrapper.offset_right = 280
+	_name_wrapper.offset_bottom = 436
+	_name_wrapper.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	parent.remove_child(label)
+	_name_wrapper.add_child(label)
+	parent.add_child(_name_wrapper)
+	label.set_anchors_preset(Control.PRESET_FULL_RECT)
+	label.offset_left = 0
+	label.offset_top = 0
+	label.offset_right = 0
+	label.offset_bottom = 0
+
 func _load_font(path: String) -> Font:
 	if not ResourceLoader.exists(path):
 		return null
@@ -346,6 +378,9 @@ func _setup_cards() -> void:
 		card_grid.add_child(row)
 	_update_display()
 
+const NAME_SLIDE_OFFSET: float = 80.0
+const NAME_FADE_DURATION: float = 0.35
+
 func _update_display() -> void:
 	var ch: Dictionary
 	if selected_index < characters.size():
@@ -354,7 +389,29 @@ func _update_display() -> void:
 		ch = {"name": "???", "color": Color(0.2, 0.2, 0.2, 1)}
 	char_sprite.color = ch.get("color", Color(0.2, 0.2, 0.2, 1))
 	char_name_label.text = ch.get("name", "???")
+	var name_text: String = ch.get("name", "???")
+	if name_text != "???":
+		_animate_name_in()
+	else:
+		if _name_wrapper:
+			_name_wrapper.modulate = Color(1, 1, 1, 1)
+		if char_name_label:
+			char_name_label.position = Vector2.ZERO
 	_update_card_glow()
+
+func _animate_name_in() -> void:
+	if not _name_wrapper or not char_name_label:
+		return
+	if _name_tween:
+		_name_tween.kill()
+	# 래퍼는 고정, 라벨만 내부에서 오른쪽→왼쪽 슬라이드
+	char_name_label.position = Vector2(NAME_SLIDE_OFFSET, 0)
+	_name_wrapper.modulate = Color(1, 1, 1, 0)
+	_name_tween = create_tween()
+	_name_tween.set_ease(Tween.EASE_OUT)
+	_name_tween.set_trans(Tween.TRANS_CUBIC)
+	_name_tween.tween_property(char_name_label, "position", Vector2.ZERO, NAME_FADE_DURATION)
+	_name_tween.parallel().tween_property(_name_wrapper, "modulate", Color(1, 1, 1, 1), NAME_FADE_DURATION)
 
 func _update_card_glow() -> void:
 	for i in SLOTS_TOTAL:
@@ -392,6 +449,14 @@ func _select_card(index: int) -> void:
 		ch = {"name": "???", "color": Color(0.2, 0.2, 0.2, 1)}
 	char_sprite.color = ch.get("color", Color(0.2, 0.2, 0.2, 1))
 	char_name_label.text = ch.get("name", "???")
+	var name_text: String = ch.get("name", "???")
+	if name_text != "???":
+		_animate_name_in()
+	else:
+		if _name_wrapper:
+			_name_wrapper.modulate = Color(1, 1, 1, 1)
+		if char_name_label:
+			char_name_label.position = Vector2.ZERO
 	var target_page: int = selected_index / SLOTS_PER_PAGE
 	if target_page != page_index:
 		_scroll_to_page(target_page)

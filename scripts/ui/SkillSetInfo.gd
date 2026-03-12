@@ -253,7 +253,7 @@ func _set_initial_state() -> void:
 	char_small.size = Vector2(160, 300)
 	char_small.modulate.a = 0.0
 	char_small.visible = false  # 하단 박스 제거
-	skill_icon.position = Vector2(860, 200)  # 200x200, 호 중앙
+	skill_icon.position = Vector2(860, 440)  # 200x200, 화면 세로 가운데 즈음
 	skill_icon.size = Vector2(200, 200)
 	skill_icon.color = Color(1, 1, 1, 1)
 	skill_icon.modulate.a = 0.0
