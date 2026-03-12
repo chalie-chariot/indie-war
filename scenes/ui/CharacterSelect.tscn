@@ -40,9 +40,9 @@ anchor_right = 0.5
 anchor_top = 0.0
 anchor_bottom = 0.0
 offset_left = -160.0
-offset_top = 140.0
+offset_top = 200.0
 offset_right = 160.0
-offset_bottom = 560.0
+offset_bottom = 620.0
 mouse_default_cursor_shape = 2
 
 [node name="CharSprite" type="ColorRect" parent="CharacterDisplay"]
@@ -52,18 +52,18 @@ anchor_left = 0.5
 anchor_right = 0.5
 anchor_top = 0.0
 anchor_bottom = 0.0
-offset_left = -80.0
-offset_top = 20.0
-offset_right = 80.0
-offset_bottom = 300.0
+offset_left = -95.0
+offset_top = 10.0
+offset_right = 95.0
+offset_bottom = 320.0
 color = Color(1, 1, 1, 1)
 
 [node name="CharNameLabel" type="Label" parent="CharacterDisplay"]
 layout_mode = 0
 offset_left = 40.0
-offset_top = 320.0
+offset_top = 400.0
 offset_right = 280.0
-offset_bottom = 356.0
+offset_bottom = 436.0
 theme_override_font_sizes/font_size = 36
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 text = "이름"
@@ -99,194 +99,40 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -500.0
-offset_top = -440.0
-offset_right = 500.0
-offset_bottom = -320.0
+offset_left = -520.0
+offset_top = -396.0
+offset_right = 520.0
+offset_bottom = -140.0
 alignment = 1
 theme_override_constants/separation = 16
 
-[node name="CardRow" type="HBoxContainer" parent="CardStrip"]
+[node name="LeftBar" type="ColorRect" parent="CardStrip"]
+custom_minimum_size = Vector2(12, 256)
 layout_mode = 2
-size_flags_horizontal = 0
-alignment = 1
-theme_override_constants/separation = 16
+color = Color(0.35, 0.35, 0.35, 0.9)
 
-[node name="CardA" type="VBoxContainer" parent="CardStrip/CardRow"]
-custom_minimum_size = Vector2(80, 100)
+[node name="ScrollContainer" type="ScrollContainer" parent="CardStrip"]
 layout_mode = 2
-rotation = 0.0523599
+size_flags_horizontal = 3
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 3
 
-[node name="CardRect" type="Panel" parent="CardStrip/CardRow/CardA"]
-custom_minimum_size = Vector2(80, 86)
+[node name="GridWrap" type="MarginContainer" parent="CardStrip/ScrollContainer"]
 layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_card_white")
+size_flags_horizontal = 3
+size_flags_vertical = 0
+theme_override_constants/margin_left = 80
 
-[node name="CardLabel" type="Label" parent="CardStrip/CardRow/CardA"]
+[node name="CardGrid" type="VBoxContainer" parent="CardStrip/ScrollContainer/GridWrap"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 14
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-text = "A"
-horizontal_alignment = 1
+size_flags_horizontal = 3
+size_flags_vertical = 0
+theme_override_constants/separation = 0
 
-[node name="CardB" type="VBoxContainer" parent="CardStrip/CardRow"]
-custom_minimum_size = Vector2(80, 100)
+[node name="RightBar" type="ColorRect" parent="CardStrip"]
+custom_minimum_size = Vector2(12, 256)
 layout_mode = 2
-rotation = 0.0523599
-
-[node name="CardRect" type="Panel" parent="CardStrip/CardRow/CardB"]
-custom_minimum_size = Vector2(80, 86)
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_card_white")
-
-[node name="CardLabel" type="Label" parent="CardStrip/CardRow/CardB"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 14
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-text = "B"
-horizontal_alignment = 1
-
-[node name="CardC" type="VBoxContainer" parent="CardStrip/CardRow"]
-custom_minimum_size = Vector2(80, 100)
-layout_mode = 2
-rotation = 0.0523599
-
-[node name="CardRect" type="Panel" parent="CardStrip/CardRow/CardC"]
-custom_minimum_size = Vector2(80, 86)
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_card_white")
-
-[node name="CardLabel" type="Label" parent="CardStrip/CardRow/CardC"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 14
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-text = "C"
-horizontal_alignment = 1
-
-[node name="CardD" type="VBoxContainer" parent="CardStrip/CardRow"]
-custom_minimum_size = Vector2(80, 100)
-layout_mode = 2
-rotation = 0.0523599
-
-[node name="CardRect" type="Panel" parent="CardStrip/CardRow/CardD"]
-custom_minimum_size = Vector2(80, 86)
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_card_white")
-
-[node name="CardLabel" type="Label" parent="CardStrip/CardRow/CardD"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 14
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-text = "D"
-horizontal_alignment = 1
-
-[node name="CardE" type="VBoxContainer" parent="CardStrip/CardRow"]
-custom_minimum_size = Vector2(80, 100)
-layout_mode = 2
-rotation = 0.0523599
-
-[node name="CardRect" type="Panel" parent="CardStrip/CardRow/CardE"]
-custom_minimum_size = Vector2(80, 86)
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_card_white")
-
-[node name="CardLabel" type="Label" parent="CardStrip/CardRow/CardE"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 14
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-text = "E"
-horizontal_alignment = 1
-
-[node name="CardF" type="VBoxContainer" parent="CardStrip/CardRow"]
-custom_minimum_size = Vector2(80, 100)
-layout_mode = 2
-rotation = 0.0523599
-
-[node name="CardRect" type="Panel" parent="CardStrip/CardRow/CardF"]
-custom_minimum_size = Vector2(80, 86)
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_card_gray")
-
-[node name="CardLabel" type="Label" parent="CardStrip/CardRow/CardF"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 14
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-text = "F"
-horizontal_alignment = 1
-
-[node name="CardEmpty1" type="VBoxContainer" parent="CardStrip/CardRow"]
-custom_minimum_size = Vector2(80, 100)
-layout_mode = 2
-rotation = 0.0523599
-
-[node name="CardRect" type="Panel" parent="CardStrip/CardRow/CardEmpty1"]
-custom_minimum_size = Vector2(80, 86)
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_card_gray")
-
-[node name="CardLabel" type="Label" parent="CardStrip/CardRow/CardEmpty1"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 14
-theme_override_colors/font_color = Color(0.5, 0.5, 0.5, 1)
-text = "-"
-horizontal_alignment = 1
-
-[node name="CardEmpty2" type="VBoxContainer" parent="CardStrip/CardRow"]
-custom_minimum_size = Vector2(80, 100)
-layout_mode = 2
-rotation = 0.0523599
-
-[node name="CardRect" type="Panel" parent="CardStrip/CardRow/CardEmpty2"]
-custom_minimum_size = Vector2(80, 86)
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_card_gray")
-
-[node name="CardLabel" type="Label" parent="CardStrip/CardRow/CardEmpty2"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 14
-theme_override_colors/font_color = Color(0.5, 0.5, 0.5, 1)
-text = "-"
-horizontal_alignment = 1
-
-[node name="CardEmpty3" type="VBoxContainer" parent="CardStrip/CardRow"]
-custom_minimum_size = Vector2(80, 100)
-layout_mode = 2
-rotation = 0.0523599
-
-[node name="CardRect" type="Panel" parent="CardStrip/CardRow/CardEmpty3"]
-custom_minimum_size = Vector2(80, 86)
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_card_gray")
-
-[node name="CardLabel" type="Label" parent="CardStrip/CardRow/CardEmpty3"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 14
-theme_override_colors/font_color = Color(0.5, 0.5, 0.5, 1)
-text = "-"
-horizontal_alignment = 1
-
-[node name="CardEmpty4" type="VBoxContainer" parent="CardStrip/CardRow"]
-custom_minimum_size = Vector2(80, 100)
-layout_mode = 2
-rotation = 0.0523599
-
-[node name="CardRect" type="Panel" parent="CardStrip/CardRow/CardEmpty4"]
-custom_minimum_size = Vector2(80, 86)
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_card_gray")
-
-[node name="CardLabel" type="Label" parent="CardStrip/CardRow/CardEmpty4"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 14
-theme_override_colors/font_color = Color(0.5, 0.5, 0.5, 1)
-text = "-"
-horizontal_alignment = 1
-
-[node name="NextArrow" type="Button" parent="CardStrip"]
-custom_minimum_size = Vector2(44, 60)
-layout_mode = 2
-theme_override_font_sizes/font_size = 24
-text = "▶"
+color = Color(0.35, 0.35, 0.35, 0.9)
 
 [node name="PageDots" type="Control" parent="."]
 layout_mode = 1
@@ -296,7 +142,7 @@ anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
 offset_left = -100.0
-offset_top = -100.0
+offset_top = -35.0
 offset_right = 100.0
-offset_bottom = -70.0
+offset_bottom = -5.0
 script = ExtResource("3_dots")

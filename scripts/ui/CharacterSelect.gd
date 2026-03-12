@@ -1,5 +1,5 @@
 extends Control
-## 캐릭터 선택창 - 카드 6종 + 상세보기
+## 캐릭터 선택창 - 슬롯 60개 (10x6), 페이지당 20개 (10x2)
 
 var characters: Array[Dictionary] = [
 	{"id": "A", "name": "선인 (仙人)", "color": Color(0.9, 0.9, 0.9, 1)},
@@ -10,21 +10,48 @@ var characters: Array[Dictionary] = [
 	{"id": "F", "name": "???", "color": Color(0.3, 0.3, 0.3, 1)},
 ]
 var selected_index: int = 0
+var _user_has_picked: bool = false
 
 const CARD_NAMES: PackedStringArray = ["A", "B", "C", "D", "E", "F"]
 
 @onready var char_sprite: ColorRect = $CharacterDisplay/CharSprite
 @onready var char_name_label: Label = $CharacterDisplay/CharNameLabel
 @onready var detail_button: Control = $DetailButton
-@onready var card_row: HBoxContainer = $CardStrip/CardRow
+@onready var scroll_container: ScrollContainer = $CardStrip/ScrollContainer
+@onready var card_grid: VBoxContainer = $CardStrip/ScrollContainer/GridWrap/CardGrid
 @onready var page_dots: Control = $PageDots
+@onready var left_bar: ColorRect = $CardStrip/LeftBar
+@onready var right_bar: ColorRect = $CardStrip/RightBar
+
+const SLOTS_TOTAL: int = 60
+const COLS: int = 10
+const ROWS: int = 6
+const SLOTS_PER_PAGE: int = 20  # 10x2
+const ROWS_PER_PAGE: int = 2
+const CARD_WIDTH: int = 80
+const CARD_HEIGHT: int = 120
+const CARD_SEP: int = 8
+const ROW_HEIGHT: int = CARD_HEIGHT + CARD_SEP
+var page_index: int = 0
+var _max_page: int = 2  # 3 pages (0,1,2)
+
+const CARD_PIVOT: Vector2 = Vector2(40, 60)
+const CARD_SCALE_SELECTED: float = 1.0
+const CARD_SCALE_NORMAL: float = 0.7
+const CARD_TWEEN_DURATION: float = 0.06
 
 func _ready() -> void:
 	_apply_fonts()
+	_setup_scroll_container()
+	_setup_edge_bars()
 	_setup_cards()
 	if detail_button:
 		detail_button.gui_input.connect(_on_detail_button_gui_input)
+	if page_dots:
+		page_dots.page_count = 3
 	call_deferred("_update_detail_button_position")
+	call_deferred("_scroll_to_page", 0)
+	call_deferred("_update_edge_bars")
 
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
@@ -32,16 +59,33 @@ func _input(event: InputEvent) -> void:
 		accept_event()
 		return
 	if event.is_action_pressed("ui_left"):
-		var next_idx: int = selected_index - 1
-		if next_idx >= 0:
-			_select_card(next_idx)
-			accept_event()
+		var next_idx: int
+		if selected_index % COLS > 0:
+			next_idx = selected_index - 1
+		else:
+			next_idx = (selected_index - 1 + SLOTS_TOTAL) % SLOTS_TOTAL
+		_select_card(next_idx)
+		accept_event()
 		return
 	if event.is_action_pressed("ui_right"):
-		var next_idx: int = selected_index + 1
-		if next_idx < characters.size():
-			_select_card(next_idx)
-			accept_event()
+		var next_idx: int = (selected_index + 1) % SLOTS_TOTAL
+		_select_card(next_idx)
+		accept_event()
+		return
+	if event.is_action_pressed("ui_up"):
+		var next_idx: int
+		if selected_index >= COLS:
+			next_idx = selected_index - COLS
+		else:
+			next_idx = (selected_index - COLS + SLOTS_TOTAL) % SLOTS_TOTAL
+		_select_card(next_idx)
+		accept_event()
+		return
+	if event.is_action_pressed("ui_down"):
+		var next_idx: int = (selected_index + COLS) % SLOTS_TOTAL
+		_select_card(next_idx)
+		accept_event()
+		return
 
 func _apply_fonts() -> void:
 	var black_han: Font = _load_font("res://assets/fonts/BlackHanSans-Regular.ttf")
@@ -58,67 +102,273 @@ func _update_detail_button_position() -> void:
 		return
 	var sprite_pos: Vector2 = char_sprite.global_position
 	var sprite_size: Vector2 = char_sprite.size
-	# 마름모 중심이 CharSprite 우상단과 맞도록
 	detail_button.global_position = sprite_pos + Vector2(sprite_size.x + 16, -18)
+
+func _setup_scroll_container() -> void:
+	var panel_style := StyleBoxEmpty.new()
+	scroll_container.add_theme_stylebox_override("panel", panel_style)
+
+const BAR_COLOR_GRAY: Color = Color(0, 0, 0, 1)
+const BAR_COLOR_GLOW: Color = Color(0.95, 0.9, 0.3, 1.0)
+const BAR_GLOW_SPREAD_DURATION: float = 0.25
+const BAR_GLOW_HOLD_DURATION: float = 0.2
+const BAR_GLOW_FADE_DURATION: float = 0.5
+var _left_bar_mat: ShaderMaterial
+var _right_bar_mat: ShaderMaterial
+var _left_glow_tween: Tween
+var _right_glow_tween: Tween
+var _left_was_glow: bool = false
+var _right_was_glow: bool = false
+var _left_sustain_particles: GPUParticles2D
+var _right_sustain_particles: GPUParticles2D
+
+func _create_bar_sustain_particles(parent: Control) -> GPUParticles2D:
+	var bar_w: float = parent.custom_minimum_size.x
+	var bar_h: float = parent.custom_minimum_size.y
+	var particles := GPUParticles2D.new()
+	particles.one_shot = false
+	particles.amount = 24
+	particles.lifetime = 1.4
+	particles.emitting = false
+	particles.position = Vector2(bar_w / 2.0, bar_h / 2.0)
+	var mat := ParticleProcessMaterial.new()
+	mat.direction = Vector3(0, 1, 0)
+	mat.spread = 165.0
+	mat.initial_velocity_min = 50.0
+	mat.initial_velocity_max = 110.0
+	mat.gravity = Vector3.ZERO
+	mat.damping_min = 8.0
+	mat.damping_max = 18.0
+	mat.scale_min = 0.15
+	mat.scale_max = 0.35
+	mat.color = Color(0.98, 0.95, 0.5, 0.55)
+	mat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	mat.emission_box_extents = Vector3(bar_w / 2.0, bar_h / 2.0, 1.0)
+	var scale_curve := Curve.new()
+	scale_curve.add_point(Vector2(0, 0.85))
+	scale_curve.add_point(Vector2(0.25, 1.0))
+	scale_curve.add_point(Vector2(0.6, 0.4))
+	scale_curve.add_point(Vector2(0.85, 0.08))
+	scale_curve.add_point(Vector2(1, 0))
+	var scale_tex := CurveTexture.new()
+	scale_tex.curve = scale_curve
+	mat.scale_curve = scale_tex
+	var alpha_curve := Curve.new()
+	alpha_curve.add_point(Vector2(0, 0.35))
+	alpha_curve.add_point(Vector2(0.2, 0.6))
+	alpha_curve.add_point(Vector2(0.5, 0.4))
+	alpha_curve.add_point(Vector2(0.8, 0.1))
+	alpha_curve.add_point(Vector2(1, 0))
+	var alpha_tex := CurveTexture.new()
+	alpha_tex.curve = alpha_curve
+	mat.alpha_curve = alpha_tex
+	var color_grad := Gradient.new()
+	color_grad.add_point(0.0, Color(1.0, 0.98, 0.6, 1.0))
+	color_grad.add_point(0.5, Color(0.98, 0.92, 0.45, 1.0))
+	color_grad.add_point(1.0, Color(0.95, 0.88, 0.35, 0.0))
+	var color_ramp_tex := GradientTexture1D.new()
+	color_ramp_tex.gradient = color_grad
+	mat.color_ramp = color_ramp_tex
+	particles.process_material = mat
+	var tex2: Texture2D = load("res://assets/textures/particle_glow_soft.tres") as Texture2D
+	if not tex2:
+		tex2 = load("res://assets/textures/light_circle_gradient.tres") as Texture2D
+	if tex2:
+		particles.texture = tex2
+	var part_mat := CanvasItemMaterial.new()
+	part_mat.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
+	particles.material = part_mat
+	parent.add_child(particles)
+	return particles
+
+func _setup_edge_bars() -> void:
+	var bar_shader: Shader = load("res://assets/shaders/bar_glow.gdshader") as Shader
+	if bar_shader:
+		if left_bar:
+			_left_bar_mat = ShaderMaterial.new()
+			_left_bar_mat.shader = bar_shader
+			_left_bar_mat.set_shader_parameter("color_gray", BAR_COLOR_GRAY)
+			_left_bar_mat.set_shader_parameter("color_glow", BAR_COLOR_GLOW)
+			_left_bar_mat.set_shader_parameter("spread", 0.0)
+			_left_bar_mat.set_shader_parameter("intensity", 0.0)
+			left_bar.material = _left_bar_mat
+			left_bar.mouse_filter = Control.MOUSE_FILTER_STOP
+			left_bar.gui_input.connect(_on_left_bar_gui_input)
+			_left_sustain_particles = _create_bar_sustain_particles(left_bar)
+		if right_bar:
+			_right_bar_mat = ShaderMaterial.new()
+			_right_bar_mat.shader = bar_shader
+			_right_bar_mat.set_shader_parameter("color_gray", BAR_COLOR_GRAY)
+			_right_bar_mat.set_shader_parameter("color_glow", BAR_COLOR_GLOW)
+			_right_bar_mat.set_shader_parameter("spread", 0.0)
+			_right_bar_mat.set_shader_parameter("intensity", 0.0)
+			right_bar.material = _right_bar_mat
+			right_bar.mouse_filter = Control.MOUSE_FILTER_STOP
+			right_bar.gui_input.connect(_on_right_bar_gui_input)
+			_right_sustain_particles = _create_bar_sustain_particles(right_bar)
+	else:
+		if left_bar:
+			left_bar.mouse_filter = Control.MOUSE_FILTER_STOP
+			left_bar.gui_input.connect(_on_left_bar_gui_input)
+		if right_bar:
+			right_bar.mouse_filter = Control.MOUSE_FILTER_STOP
+			right_bar.gui_input.connect(_on_right_bar_gui_input)
+
+func _update_bar_glow(bar_mat: ShaderMaterial, should_glow: bool, tween_ref: String) -> void:
+	if not bar_mat:
+		return
+	if tween_ref == "left" and _left_glow_tween:
+		_left_glow_tween.kill()
+	elif tween_ref == "right" and _right_glow_tween:
+		_right_glow_tween.kill()
+	var tween := create_tween()
+	tween.set_ease(Tween.EASE_OUT)
+	tween.set_trans(Tween.TRANS_SINE)
+	if tween_ref == "left":
+		_left_glow_tween = tween
+	else:
+		_right_glow_tween = tween
+	if should_glow:
+		if tween_ref == "left" and _left_sustain_particles:
+			_left_sustain_particles.emitting = true
+		elif tween_ref == "right" and _right_sustain_particles:
+			_right_sustain_particles.emitting = true
+		bar_mat.set_shader_parameter("spread", 0.0)
+		bar_mat.set_shader_parameter("intensity", 0.0)
+		tween.tween_method(func(v): bar_mat.set_shader_parameter("spread", v), 0.0, 1.0, BAR_GLOW_SPREAD_DURATION * 0.5)
+		tween.parallel().tween_method(func(v): bar_mat.set_shader_parameter("intensity", v), 0.0, 1.0, BAR_GLOW_SPREAD_DURATION)
+	else:
+		if tween_ref == "left" and _left_sustain_particles:
+			_left_sustain_particles.emitting = false
+		elif tween_ref == "right" and _right_sustain_particles:
+			_right_sustain_particles.emitting = false
+		tween.tween_interval(BAR_GLOW_HOLD_DURATION)
+		tween.tween_method(func(v): bar_mat.set_shader_parameter("intensity", v), 1.0, 0.0, BAR_GLOW_FADE_DURATION)
+
+func _update_edge_bars() -> void:
+	var at_left_end: bool = _user_has_picked and (selected_index % COLS == 0)
+	var at_right_end: bool = _user_has_picked and (selected_index % COLS == COLS - 1)
+	if left_bar:
+		var left_visible: bool = (page_index == 0)
+		if not left_visible:
+			_left_was_glow = false
+		left_bar.visible = left_visible
+		if left_bar.visible and _left_bar_mat:
+			if _left_was_glow != at_left_end:
+				_left_was_glow = at_left_end
+				_update_bar_glow(_left_bar_mat, at_left_end, "left")
+		elif left_bar.visible and not _left_bar_mat:
+			left_bar.color = BAR_COLOR_GLOW if at_left_end else BAR_COLOR_GRAY
+	if right_bar:
+		var right_visible: bool = (page_index == _max_page)
+		if not right_visible:
+			_right_was_glow = false
+		right_bar.visible = right_visible
+		if right_bar.visible and _right_bar_mat:
+			if _right_was_glow != at_right_end:
+				_right_was_glow = at_right_end
+				_update_bar_glow(_right_bar_mat, at_right_end, "right")
+		elif right_bar.visible and not _right_bar_mat:
+			right_bar.color = BAR_COLOR_GLOW if at_right_end else BAR_COLOR_GRAY
+
+func _on_left_bar_gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton:
+		var mb: InputEventMouseButton = event as InputEventMouseButton
+		if mb.button_index == MOUSE_BUTTON_LEFT and mb.pressed:
+			if page_index > 0:
+				_scroll_to_page(page_index - 1)
+				accept_event()
+
+func _on_right_bar_gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton:
+		var mb: InputEventMouseButton = event as InputEventMouseButton
+		if mb.button_index == MOUSE_BUTTON_LEFT and mb.pressed:
+			if page_index < _max_page:
+				_scroll_to_page(page_index + 1)
+				accept_event()
 
 func _load_font(path: String) -> Font:
 	if not ResourceLoader.exists(path):
 		return null
 	return load(path) as Font
 
+func _create_card_style(white: bool) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(1, 1, 1, 1) if white else Color(0.2, 0.2, 0.2, 1)
+	style.set_corner_radius_all(8)
+	return style
+
+func _get_card_at(index: int) -> Control:
+	if index < 0 or index >= SLOTS_TOTAL:
+		return null
+	var row_idx: int = index / COLS
+	var col_idx: int = index % COLS
+	var row: HBoxContainer = card_grid.get_child(row_idx) as HBoxContainer
+	if not row:
+		return null
+	return row.get_child(col_idx) as Control
+
 func _setup_cards() -> void:
-	for i in 6:
-		var card: Control = card_row.get_child(i) as Control
-		if not card:
-			continue
-		var rect: Panel = card.get_node_or_null("CardRect") as Panel
-		var label: Label = card.get_node_or_null("CardLabel") as Label
-		if rect:
+	var row_width: int = COLS * CARD_WIDTH + (COLS - 1) * CARD_SEP
+	card_grid.custom_minimum_size.x = row_width
+	card_grid.custom_minimum_size.y = ROWS * ROW_HEIGHT
+	card_grid.add_theme_constant_override("separation", 0)
+	for row_idx in ROWS:
+		var row := HBoxContainer.new()
+		row.custom_minimum_size = Vector2(row_width, ROW_HEIGHT)
+		row.add_theme_constant_override("separation", CARD_SEP)
+		for col_idx in COLS:
+			var index: int = row_idx * COLS + col_idx
+			var card := VBoxContainer.new()
+			card.custom_minimum_size = Vector2(CARD_WIDTH, CARD_HEIGHT)
+			card.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+			card.mouse_filter = Control.MOUSE_FILTER_STOP
+			card.gui_input.connect(_on_card_gui_input.bind(index))
+			var rect := Panel.new()
+			rect.custom_minimum_size = Vector2(CARD_WIDTH, CARD_HEIGHT - 14)
 			rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
-			var base: StyleBox = rect.get_theme_stylebox("panel")
-			if base:
-				var style: StyleBoxFlat = base.duplicate() as StyleBoxFlat
-				if style:
-					style.bg_color = Color(1, 1, 1, 1) if i < 5 else Color(0.2, 0.2, 0.2, 1)
-					rect.add_theme_stylebox_override("panel", style)
-		if label:
+			var is_char: bool = index < characters.size()
+			rect.add_theme_stylebox_override("panel", _create_card_style(index < 5))
+			var label := Label.new()
 			label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		if label and i < 6:
-			label.text = CARD_NAMES[i]
-		card.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND if i < 5 else Control.CURSOR_FORBIDDEN
-		card.mouse_filter = Control.MOUSE_FILTER_STOP
-		card.gui_input.connect(_on_card_gui_input.bind(i))
+			label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			label.add_theme_font_size_override("font_size", 14)
+			label.text = CARD_NAMES[index] if index < 6 else "-"
+			if index >= 6:
+				label.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5, 1))
+			else:
+				label.add_theme_color_override("font_color", Color(0, 0, 0, 1))
+			card.add_child(rect)
+			card.add_child(label)
+			rect.name = "CardRect"
+			label.name = "CardLabel"
+			row.add_child(card)
+		card_grid.add_child(row)
 	_update_display()
 
 func _update_display() -> void:
-	if characters.is_empty():
-		return
-	var ch: Dictionary = characters[selected_index]
-	char_sprite.color = ch.get("color", Color(1, 1, 1, 1))
-	char_name_label.text = ch.get("name", "이름")
+	var ch: Dictionary
+	if selected_index < characters.size():
+		ch = characters[selected_index]
+	else:
+		ch = {"name": "???", "color": Color(0.2, 0.2, 0.2, 1)}
+	char_sprite.color = ch.get("color", Color(0.2, 0.2, 0.2, 1))
+	char_name_label.text = ch.get("name", "???")
 	_update_card_glow()
 
-const CARD_SIZE_SELECTED: Vector2 = Vector2(80, 100)
-const CARD_SIZE_NORMAL: Vector2 = Vector2(56, 70)
-const CARD_RECT_H_SELECTED: float = 86.0
-const CARD_RECT_H_NORMAL: float = 60.0
-const CARD_TWEEN_DURATION: float = 0.06
-
 func _update_card_glow() -> void:
-	for i in card_row.get_child_count():
-		var card: Control = card_row.get_child(i) as Control
+	for i in SLOTS_TOTAL:
+		var card: Control = _get_card_at(i)
 		if not card:
 			continue
-		var is_selected: bool = (i == selected_index and i < 5)
-		var target_size: Vector2 = CARD_SIZE_SELECTED if is_selected else CARD_SIZE_NORMAL
+		var is_selected: bool = (i == selected_index)
+		var target_scale: float = CARD_SCALE_SELECTED if is_selected else CARD_SCALE_NORMAL
+		card.pivot_offset = CARD_PIVOT
 		var rect: Panel = card.get_node_or_null("CardRect") as Panel
 		if rect:
-			var target_rect_h: float = CARD_RECT_H_SELECTED if is_selected else CARD_RECT_H_NORMAL
-			var tween := create_tween()
-			tween.set_parallel(true)
-			tween.tween_property(card, "custom_minimum_size", target_size, CARD_TWEEN_DURATION).set_ease(Tween.EASE_OUT)
-			tween.tween_property(rect, "custom_minimum_size", Vector2(target_size.x, target_rect_h), CARD_TWEEN_DURATION).set_ease(Tween.EASE_OUT)
 			rect.modulate = Color(1.05, 1.05, 1.05, 1) if is_selected else Color(1, 1, 1, 1)
+		var tween := create_tween()
+		tween.tween_property(card, "scale", Vector2(target_scale, target_scale), CARD_TWEEN_DURATION).set_ease(Tween.EASE_OUT)
 
 func _on_card_gui_input(event: InputEvent, index: int) -> void:
 	if not event is InputEventMouseButton:
@@ -131,10 +381,22 @@ func _on_card_gui_input(event: InputEvent, index: int) -> void:
 func _select_card(index: int) -> void:
 	if selected_index == index:
 		return
+	if index < 0 or index >= SLOTS_TOTAL:
+		return
+	_user_has_picked = true
 	selected_index = index
-	char_sprite.color = characters[index].get("color", Color.WHITE)
-	char_name_label.text = characters[index].get("name", "이름")
+	var ch: Dictionary
+	if index < characters.size():
+		ch = characters[index]
+	else:
+		ch = {"name": "???", "color": Color(0.2, 0.2, 0.2, 1)}
+	char_sprite.color = ch.get("color", Color(0.2, 0.2, 0.2, 1))
+	char_name_label.text = ch.get("name", "???")
+	var target_page: int = selected_index / SLOTS_PER_PAGE
+	if target_page != page_index:
+		_scroll_to_page(target_page)
 	_update_card_glow()
+	_update_edge_bars()
 
 func _on_detail_button_gui_input(event: InputEvent) -> void:
 	if not event is InputEventMouseButton:
@@ -147,4 +409,14 @@ func _on_detail_button_gui_input(event: InputEvent) -> void:
 func _on_detail_click() -> void:
 	if selected_index == 0:
 		get_tree().change_scene_to_file("res://scenes/ui/CharacterInfo.tscn")
-	# 나머지는 아무 반응 없음
+
+func _scroll_to_page(p: int) -> void:
+	page_index = clampi(p, 0, _max_page)
+	var target_scroll: int = page_index * ROWS_PER_PAGE * ROW_HEIGHT
+	scroll_container.scroll_vertical = target_scroll
+	if page_dots.has_method("set_page"):
+		page_dots.set_page(page_index)
+	else:
+		page_dots.set("active_index", page_index)
+		page_dots.queue_redraw()
+	_update_edge_bars()
