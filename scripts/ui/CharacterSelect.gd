@@ -14,8 +14,26 @@ var _user_has_picked: bool = false
 
 const CARD_NAMES: PackedStringArray = ["A", "B", "C", "D", "E", "F"]
 
+# 더미 아이콘: 선인/무사→솔페란, 음양사→디스마리스, 궁수/팔라딘→엘노르
+const CHAR_ICONS: Array[Texture2D] = [
+	preload("res://assets/img/솔페란.png"),   # 0 선인
+	preload("res://assets/img/솔페란.png"),   # 1 무사
+	preload("res://assets/img/디스마리스.png"), # 2 음양사
+	preload("res://assets/img/엘노르.png"),   # 3 팔라딘
+	preload("res://assets/img/엘노르.png"),   # 4 궁수
+]
+# 세력별 발광 색상: 솔페란=붉은핑크, 디스마리스=보라, 엘노르=청록
+const CHAR_GLOW_COLORS: Array[Color] = [
+	Color(1.0, 0.02, 0.04),   # 더 새빨간색 솔페란
+	Color(1.0, 0.02, 0.04),   # 솔페란
+	Color(0.608, 0.188, 1.0),  # #9B30FF 디스마리스
+	Color(0.0, 1.0, 0.8),   # #00FFCC 엘노르
+	Color(0.0, 1.0, 0.8),   # 엘노르
+]
+
 @onready var char_sprite: ColorRect = $CharacterDisplay/CharSprite
 @onready var char_name_label: Label = $CharacterDisplay/CharNameLabel
+@onready var char_icon_dummy: TextureRect = $CharIconDummy
 @onready var detail_button: Control = $DetailButton
 @onready var scroll_container: ScrollContainer = $CardStrip/ScrollContainer
 @onready var card_grid: VBoxContainer = $CardStrip/ScrollContainer/GridWrap/CardGrid
@@ -46,6 +64,7 @@ var _name_tween: Tween = null
 func _ready() -> void:
 	_apply_fonts()
 	_setup_name_wrapper()
+	_setup_char_icon_dummy()
 	_setup_scroll_container()
 	_setup_edge_bars()
 	_setup_cards()
@@ -54,8 +73,10 @@ func _ready() -> void:
 	if page_dots:
 		page_dots.page_count = 3
 	call_deferred("_update_detail_button_position")
+	call_deferred("_update_char_icon_position")
 	call_deferred("_scroll_to_page", 0)
 	call_deferred("_update_edge_bars")
+	get_viewport().size_changed.connect(_on_viewport_size_changed)
 
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
@@ -101,6 +122,10 @@ func _apply_fonts() -> void:
 		if dl:
 			dl.add_theme_font_override("font", noto)
 
+func _on_viewport_size_changed() -> void:
+	_update_detail_button_position()
+	_update_char_icon_position()
+
 func _update_detail_button_position() -> void:
 	if not char_sprite or not detail_button:
 		return
@@ -112,6 +137,40 @@ func _update_detail_button_position() -> void:
 	var right_edge: float = char_display.global_position.x + char_display.size.x
 	detail_button.global_position = Vector2(right_edge + GAP, char_sprite.global_position.y - 18)
 	detail_button.scale = Vector2(1.5, 1.5)  # 마름모·텍스트 함께 1.5배
+
+func _setup_char_icon_dummy() -> void:
+	if char_icon_dummy:
+		var shader: Shader = load("res://assets/shaders/icon_glow.gdshader") as Shader
+		if shader:
+			char_icon_dummy.material = ShaderMaterial.new()
+			char_icon_dummy.material.shader = shader
+	_update_char_icon()
+
+func _update_char_icon_position() -> void:
+	if not char_icon_dummy:
+		return
+	var vp_size: Vector2 = get_viewport().get_visible_rect().size
+	var icon_w: float = 240.0
+	var icon_h: float = 200.0
+	var margin: float = 24.0
+	char_icon_dummy.offset_left = vp_size.x - icon_w - margin
+	char_icon_dummy.offset_top = margin
+	char_icon_dummy.offset_right = vp_size.x - margin
+	char_icon_dummy.offset_bottom = margin + icon_h
+	char_icon_dummy.custom_minimum_size = Vector2(icon_w, icon_h)
+
+func _update_char_icon() -> void:
+	if not char_icon_dummy:
+		return
+	if selected_index < CHAR_ICONS.size():
+		char_icon_dummy.texture = CHAR_ICONS[selected_index]
+		char_icon_dummy.visible = true
+		# 세력별 발광 색상 적용
+		var mat: ShaderMaterial = char_icon_dummy.material as ShaderMaterial
+		if mat and selected_index < CHAR_GLOW_COLORS.size():
+			mat.set_shader_parameter("glow_color", CHAR_GLOW_COLORS[selected_index])
+	else:
+		char_icon_dummy.visible = false
 
 func _setup_scroll_container() -> void:
 	var panel_style := StyleBoxEmpty.new()
@@ -389,6 +448,7 @@ func _update_display() -> void:
 		ch = {"name": "???", "color": Color(0.2, 0.2, 0.2, 1)}
 	char_sprite.color = ch.get("color", Color(0.2, 0.2, 0.2, 1))
 	char_name_label.text = ch.get("name", "???")
+	_update_char_icon()
 	var name_text: String = ch.get("name", "???")
 	if name_text != "???":
 		_animate_name_in()
@@ -449,6 +509,7 @@ func _select_card(index: int) -> void:
 		ch = {"name": "???", "color": Color(0.2, 0.2, 0.2, 1)}
 	char_sprite.color = ch.get("color", Color(0.2, 0.2, 0.2, 1))
 	char_name_label.text = ch.get("name", "???")
+	_update_char_icon()
 	var name_text: String = ch.get("name", "???")
 	if name_text != "???":
 		_animate_name_in()
