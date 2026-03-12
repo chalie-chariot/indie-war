@@ -15,9 +15,11 @@ var current_index: int = 0
 var is_animating: bool = false
 
 @onready var logo_label: Label = $RightArea/TitleArea/LogoRow/LogoWrapper/LogoContainer/LogoLabel
-@onready var title_label: Label = $RightArea/TitleArea/TitleRowWrapper/TitleRow/TitleLabel
+@onready var title_label: Label = $RightArea/TitleArea/TitleRowWrapper/TitleRow/TitleBlock/TitleLabel
+@onready var menu_underline: Control = $RightArea/TitleArea/TitleRowWrapper/TitleRow/TitleBlock/UnderLine
 @onready var prev_btn: Control = $RightArea/TitleArea/TitleRowWrapper/TitleRow/PrevBtn
 @onready var next_btn: Control = $RightArea/TitleArea/TitleRowWrapper/TitleRow/NextBtn
+@onready var hint_box: Control = $HintBox
 @onready var indicator_dots: Control = $RightArea/IndicatorDots
 @onready var eclipse_circle: Control = $RightArea/EclipseCircle
 @onready var left_white_circle: Control = $RightArea/TitleArea/TitleRowWrapper/LeftWhiteCircle
@@ -27,7 +29,14 @@ func _ready() -> void:
 	_apply_fonts()
 	prev_btn.pressed.connect(func() -> void: _change_menu(-1))
 	next_btn.pressed.connect(func() -> void: _change_menu(1))
+	prev_btn.modulate = Color(1, 1, 1, 0.4)
+	next_btn.modulate = Color(1, 1, 1, 0.4)
+	prev_btn.mouse_entered.connect(_on_nav_hover.bind(prev_btn))
+	prev_btn.mouse_exited.connect(_on_nav_unhover.bind(prev_btn))
+	next_btn.mouse_entered.connect(_on_nav_hover.bind(next_btn))
+	next_btn.mouse_exited.connect(_on_nav_unhover.bind(next_btn))
 	_update_ui_immediate()
+	_play_hint_animation()
 
 func _input(event: InputEvent) -> void:
 	if is_animating:
@@ -53,6 +62,8 @@ func _input(event: InputEvent) -> void:
 		if ke.pressed and not ke.echo:
 			if ke.keycode == KEY_ENTER or ke.keycode == KEY_KP_ENTER or ke.keycode == KEY_SPACE:
 				_execute_current_menu()
+			elif ke.keycode == KEY_ESCAPE:
+				get_tree().quit()
 			elif ke.keycode == KEY_LEFT or ke.keycode == KEY_A:
 				_change_menu(-1)
 			elif ke.keycode == KEY_RIGHT or ke.keycode == KEY_D:
@@ -60,21 +71,58 @@ func _input(event: InputEvent) -> void:
 
 func _apply_fonts() -> void:
 	var black_han: Font = _load_font("res://assets/fonts/BlackHanSans-Regular.ttf")
+	var noto: Font = _load_font("res://assets/fonts/NotoSansKR-Regular.otf")
+	if noto == null:
+		noto = _load_font("res://assets/fonts/NotoSansKR-Regular.ttf")
 	if is_instance_valid(title_label) and black_han:
 		title_label.add_theme_font_override("font", black_han)
+	if hint_box and noto:
+		for c in hint_box.get_children():
+			if c is Label:
+				c.add_theme_font_override("font", noto)
+				c.add_theme_font_size_override("font_size", 16)
 
 func _load_font(path: String) -> Font:
 	if not ResourceLoader.exists(path):
 		return null
 	return load(path) as Font
 
+func _play_hint_animation() -> void:
+	if not hint_box:
+		return
+	await get_tree().create_timer(1.0).timeout
+	var t := create_tween()
+	t.tween_property(hint_box, "modulate", Color(1, 1, 1, 1), 0.6).from(Color(1, 1, 1, 0))
+	await get_tree().create_timer(3.5).timeout
+	var t2 := create_tween()
+	t2.tween_property(hint_box, "modulate", Color(1, 1, 1, 0), 1.0)
+
+func _pulse_menu_label() -> void:
+	if not title_label:
+		return
+	title_label.pivot_offset = title_label.size * 0.5
+	var pulse := create_tween()
+	pulse.tween_property(title_label, "scale", Vector2(1.08, 1.08), 0.08)
+	pulse.tween_property(title_label, "scale", Vector2(1.0, 1.0), 0.12)
+
+func _on_nav_hover(btn: Control) -> void:
+	var tw := create_tween()
+	tw.tween_property(btn, "modulate", Color(1, 1, 1, 1), 0.15)
+
+func _on_nav_unhover(btn: Control) -> void:
+	var tw := create_tween()
+	tw.tween_property(btn, "modulate", Color(1, 1, 1, 0.4), 0.15)
+
 func _change_menu(direction: int) -> void:
 	if is_animating:
 		return
 	is_animating = true
+	_pulse_menu_label()
 
 	# 인덱스·텍스트·도트 즉시 변경
 	_apply_index_change(direction)
+	if menu_underline:
+		menu_underline.call_deferred("queue_redraw")
 
 	var tween := create_tween()
 	tween.set_parallel(false)

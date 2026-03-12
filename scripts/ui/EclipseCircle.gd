@@ -12,6 +12,7 @@ const DIAMOND_ARC_OFFSET := 45.0
 
 var diamonds: Array = []
 var _diamond_script: GDScript
+var _active_tweens: Array = []
 
 func _ready() -> void:
 	_diamond_script = load("res://scripts/ui/DiamondShape.gd") as GDScript
@@ -23,6 +24,7 @@ func _ready() -> void:
 		d.custom_minimum_size = Vector2(48, 48)
 		d.size = Vector2(48, 48)
 		d.position = pos - Vector2(24, 24)
+		d.pivot_offset = Vector2(24, 24)
 		d.glow_radius = 0.0
 		d.glow_alpha = 0.0
 		d.modulate.a = 0.2
@@ -34,24 +36,40 @@ func set_active_index(idx: int) -> void:
 	pass
 
 func play_diamond_anim(direction: int) -> void:
+	# 기존 트윈 정리·마름모 초기화 → 양방향 타이밍 동일
+	for t in _active_tweens:
+		if is_instance_valid(t) and t.is_valid():
+			t.kill()
+	_active_tweens.clear()
+	for d in diamonds:
+		d.modulate.a = 0.2
+		d.scale = Vector2(1.0, 1.0)
+
 	var order: Array = diamonds.duplicate()
 	if direction == -1:
 		order.reverse()
 
+	const SCALE_FIRST: float = 2.0
+	const SCALE_STEP: float = 0.16
+	const INTERVAL: float = 0.22  # 커짐·작아짐 모두 순차 간격 동일
+	const GLOW_UP: float = 0.32
+	const HOLD: float = 0.22
+	const FADE_OUT: float = 0.32
 	for i in order.size():
 		var d = order[i]
+		var peak_scale: float = maxf(1.05, SCALE_FIRST - float(i) * SCALE_STEP)
 		var tween := create_tween()
-		tween.tween_interval(i * 0.06)
-		# 마름모에서 빛 발광 (범위·강도 증가)
-		tween.tween_property(d, "modulate:a", 1.0, 0.18).from(0.2).set_ease(Tween.EASE_OUT)
-		tween.tween_property(d, "glow_radius", 22.0, 0.18).from(0.0).set_ease(Tween.EASE_OUT)
-		tween.tween_property(d, "glow_alpha", 1.0, 0.18).from(0.0).set_ease(Tween.EASE_OUT)
-		# 잔상 유지
-		tween.tween_interval(0.12)
-		# 천천히 소멸
-		tween.tween_property(d, "modulate:a", 0.2, 0.25).set_ease(Tween.EASE_IN)
-		tween.tween_property(d, "glow_radius", 0.0, 0.25).set_ease(Tween.EASE_IN)
-		tween.tween_property(d, "glow_alpha", 0.0, 0.25).set_ease(Tween.EASE_IN)
+		_active_tweens.append(tween)
+		tween.tween_interval(i * INTERVAL)
+		tween.set_parallel(true)
+		tween.tween_property(d, "modulate:a", 1.0, GLOW_UP).from(0.2).set_ease(Tween.EASE_OUT)
+		tween.tween_property(d, "scale", Vector2(peak_scale, peak_scale), GLOW_UP).from(Vector2(1.0, 1.0)).set_ease(Tween.EASE_OUT)
+		tween.set_parallel(false)
+		tween.tween_interval(HOLD)
+		tween.set_parallel(true)
+		tween.tween_property(d, "modulate:a", 0.2, FADE_OUT).set_ease(Tween.EASE_IN)
+		tween.tween_property(d, "scale", Vector2(1.0, 1.0), FADE_OUT).set_ease(Tween.EASE_IN)
+		tween.set_parallel(false)
 
 func _get_diamond_center(i: int) -> Vector2:
 	var center := Vector2(CENTER_X_OFFSET, CENTER_Y)
