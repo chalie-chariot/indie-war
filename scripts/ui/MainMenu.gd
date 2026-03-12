@@ -13,7 +13,8 @@ var menus: Array[Dictionary] = [
 ]
 var current_index: int = 0
 
-@onready var logo_placeholder: ColorRect = $RightArea/TitleArea/LogoRow/LogoWrapper/LogoPlaceholder
+@onready var logo_wrapper: Control = $RightArea/TitleArea/LogoRow/LogoWrapper
+@onready var logo_label: Label = $RightArea/TitleArea/LogoRow/LogoWrapper/LogoContainer/LogoLabel
 @onready var title_label: Label = $RightArea/TitleArea/TitleRowWrapper/TitleRow/TitleLabel
 @onready var prev_btn: Control = $RightArea/TitleArea/TitleRowWrapper/TitleRow/PrevBtn
 @onready var next_btn: Control = $RightArea/TitleArea/TitleRowWrapper/TitleRow/NextBtn
@@ -27,7 +28,7 @@ func _ready() -> void:
 	_apply_fonts()
 	prev_btn.pressed.connect(_on_prev_pressed)
 	next_btn.pressed.connect(_on_next_pressed)
-	_update_ui()
+	_update_ui(false)  # 최초 로드: 애니 없이 즉시 표시
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
@@ -66,6 +67,7 @@ func _on_prev_pressed() -> void:
 	current_index -= 1
 	if current_index < 0:
 		current_index = 5
+	_update_ui(true)
 	if divider_glow and divider_glow.has_method("animate_right_to_left"):
 		divider_glow.animate_right_to_left()
 	if indicator_dots and indicator_dots.has_method("set_active_index"):
@@ -77,6 +79,7 @@ func _on_next_pressed() -> void:
 	current_index += 1
 	if current_index >= 6:
 		current_index = 0
+	_update_ui(true)
 	if divider_glow and divider_glow.has_method("animate_left_to_right"):
 		divider_glow.animate_left_to_right()
 	if indicator_dots and indicator_dots.has_method("set_active_index"):
@@ -84,7 +87,19 @@ func _on_next_pressed() -> void:
 	if eclipse_circle and eclipse_circle.has_method("set_active_index"):
 		eclipse_circle.set_active_index(current_index)
 
-func _update_ui() -> void:
+func _update_ui(animate: bool = true) -> void:
+	if animate and logo_wrapper:
+		# 하얀 아이콘+숫자만 숨김 → 갱신 → 표시 (숫자 겹침 방지)
+		var tween := create_tween()
+		tween.tween_property(logo_wrapper, "modulate:a", 0.0, 0.1).set_ease(Tween.EASE_IN)
+		tween.tween_callback(_update_ui_immediate)
+		tween.tween_property(logo_wrapper, "modulate:a", 1.0, 0.1).set_ease(Tween.EASE_OUT)
+	else:
+		_update_ui_immediate()
+
+func _update_ui_immediate() -> void:
+	if title_label and current_index >= 0 and current_index < menus.size():
+		title_label.text = menus[current_index].name
 	_update_logo_placeholder(current_index + 1)
 	if indicator_dots and indicator_dots.has_method("set_active_index"):
 		indicator_dots.set_active_index(current_index, true)
@@ -107,17 +122,5 @@ func _execute_current_menu() -> void:
 			print("성역 미구현")
 
 func _update_logo_placeholder(menu_num: int) -> void:
-	if not logo_placeholder:
-		return
-	var existing: Node = logo_placeholder.get_node_or_null("MenuNumLabel")
-	if existing:
-		existing.queue_free()
-	var label: Label = Label.new()
-	label.name = "MenuNumLabel"
-	label.text = str(menu_num)
-	label.add_theme_font_size_override("font_size", 24)
-	label.add_theme_color_override("font_color", Color.BLACK)
-	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	label.size = Vector2(64, 64)
-	logo_placeholder.add_child(label)
+	if logo_label:
+		logo_label.text = str(menu_num)
