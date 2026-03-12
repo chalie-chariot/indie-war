@@ -1,0 +1,138 @@
+[gd_scene load_steps=3 format=3 uid="uid://cskillset1"]
+
+[ext_resource type="Script" path="res://scripts/ui/SkillSetInfo.gd" id="1_main"]
+[ext_resource type="Script" path="res://scripts/ui/ArchCircle.gd" id="2_arch"]
+[ext_resource type="Script" path="res://scripts/ui/VerticalLineDraw.gd" id="3_line"]
+
+[node name="SkillSetInfo" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_main")
+
+[node name="BgRect" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.101961, 0.101961, 0.101961, 1)
+
+[node name="PageTitle" type="Label" parent="."]
+layout_mode = 0
+offset_left = 80.0
+offset_top = 40.0
+offset_right = 300.0
+offset_bottom = 80.0
+theme_override_font_sizes/font_size = 24
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+text = "스킬 정보 UI"
+
+[node name="SkillNameLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = 810.0
+offset_top = 120.0
+offset_right = 1110.0
+offset_bottom = 160.0
+theme_override_font_sizes/font_size = 28
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+text = ""
+horizontal_alignment = 1
+
+[node name="ArchCircle" type="Node2D" parent="."]
+position = Vector2(728, 820)
+script = ExtResource("2_arch")
+
+[node name="SkillButtons" type="Control" parent="."]
+layout_mode = 0
+offset_left = 728.0
+offset_top = 820.0
+offset_right = 728.0
+offset_bottom = 820.0
+
+[node name="CharacterDisplay" type="Control" parent="."]
+layout_mode = 0
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 1920.0
+offset_bottom = 1080.0
+
+[node name="CharMain" type="ColorRect" parent="CharacterDisplay"]
+layout_mode = 0
+offset_left = 588.0
+offset_top = 150.0
+offset_right = 868.0
+offset_bottom = 650.0
+color = Color(0.9, 0.9, 0.9, 1)
+
+[node name="CharSmall" type="ColorRect" parent="CharacterDisplay"]
+layout_mode = 0
+offset_left = 1030.0
+offset_top = 575.0
+offset_right = 1170.0
+offset_bottom = 825.0
+color = Color(0.85, 0.85, 0.9, 1)
+
+[node name="SkillDescLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = 660.0
+offset_top = 880.0
+offset_right = 1260.0
+offset_bottom = 940.0
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(1, 1, 1, 0.9)
+text = "짧은 스킬 설명문"
+horizontal_alignment = 1
+
+[node name="TabIndicator" type="HBoxContainer" parent="."]
+layout_mode = 0
+offset_left = 80.0
+offset_top = 980.0
+offset_right = 144.0
+offset_bottom = 990.0
+theme_override_constants/separation = 8
+
+[node name="Tab1" type="ColorRect" parent="TabIndicator"]
+custom_minimum_size = Vector2(32, 10)
+layout_mode = 2
+color = Color(1, 1, 1, 1)
+
+[node name="Tab2" type="ColorRect" parent="TabIndicator"]
+custom_minimum_size = Vector2(32, 10)
+layout_mode = 2
+color = Color(1, 1, 1, 0.3)
+
+[node name="CharSubtitle" type="Label" parent="."]
+layout_mode = 0
+offset_left = 120.0
+offset_top = 920.0
+offset_right = 280.0
+offset_bottom = 948.0
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(1, 1, 1, 0.4)
+text = "관측의 절도사"
+
+[node name="CharNameLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = 120.0
+offset_top = 955.0
+offset_right = 280.0
+offset_bottom = 1000.0
+theme_override_font_sizes/font_size = 36
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+text = "세릴리아"
+
+[node name="VerticalLine" type="Node2D" parent="."]
+position = Vector2(100, 920)
+script = ExtResource("3_line")
+
+[node name="BrandLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = 1650.0
+offset_top = 1020.0
+offset_right = 1880.0
+offset_bottom = 1060.0
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(1, 1, 1, 0.3)
+text = "Skill Set Info UI"
+horizontal_alignment = 2

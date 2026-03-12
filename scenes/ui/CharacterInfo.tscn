@@ -1,14 +1,22 @@
-[gd_scene format=3 uid="uid://c8k2m5n7x4qwr"]
+[gd_scene load_steps=9 format=3 uid="uid://c8k2m5n7x4qwr"]
 
 [ext_resource type="Script" path="res://scripts/ui/CharacterInfo.gd" id="1_main"]
-[ext_resource type="Script" path="res://scripts/ui/MoonCircle.gd" id="2_moon"]
-[ext_resource type="Script" path="res://scripts/ui/CharacterProgressBar.gd" id="3_progress"]
-[ext_resource type="Script" path="res://scripts/ui/CharScrollIndicators.gd" id="4_indicators"]
-[ext_resource type="Shader" path="res://assets/shaders/vertical_fade.gdshader" id="5_fade"]
+[ext_resource type="Script" path="res://scripts/ui/CharacterInfoDivider.gd" id="2_divider"]
+[ext_resource type="Script" path="res://scripts/ui/CharacterEclipseUI.gd" id="3_eclipse"]
+[ext_resource type="Script" path="res://scripts/ui/SunNode.gd" id="4_sun"]
+[ext_resource type="Script" path="res://scripts/ui/MoonNode.gd" id="5_moon"]
+[ext_resource type="Script" path="res://scripts/ui/CharacterTabDots.gd" id="6_dots"]
+[ext_resource type="Script" path="res://scripts/ui/CharacterSkillIcons.gd" id="7_skills"]
+[ext_resource type="Script" path="res://scripts/ui/CharacterStatsView.gd" id="8_stats"]
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_fade"]
-shader = ExtResource("5_fade")
-shader_parameter/bottom_color = Color(0.118, 0.118, 0.118, 1)
+[sub_resource type="Gradient" id="Gradient_fade"]
+colors = PackedColorArray(0, 0, 0, 0, 0, 0, 0, 1)
+offsets = PackedFloat32Array(0.0, 1.0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_fade"]
+fill_from = Vector2(0, 0)
+fill_to = Vector2(0, 1)
+gradient = SubResource("Gradient_fade")
 
 [node name="CharacterInfo" type="Control"]
 layout_mode = 3
@@ -22,88 +30,169 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0.118, 0.118, 0.118, 1)
+color = Color(0, 0, 0, 1)
 
-[node name="PageTitle" type="Label" parent="."]
-layout_mode = 0
-offset_left = 48.0
-offset_top = 32.0
-offset_right = 300.0
-offset_bottom = 68.0
-theme_override_font_sizes/font_size = 28
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-text = "캐릭터 정보"
-
-[node name="EclipseUI" type="Control" parent="."]
-layout_mode = 0
-offset_left = 420.0
-offset_top = 60.0
-offset_right = 620.0
-offset_bottom = 200.0
-
-[node name="MoonCircle" type="Node2D" parent="EclipseUI"]
-position = Vector2(100, 52)
-script = ExtResource("2_moon")
-
-[node name="ProgressBar" type="Node2D" parent="EclipseUI"]
-position = Vector2(100, 126)
-script = ExtResource("3_progress")
-
-[node name="ScribeText" type="Label" parent="."]
-layout_mode = 0
-offset_left = 48.0
-offset_top = 220.0
-offset_right = 800.0
-offset_bottom = 600.0
-theme_override_font_sizes/font_size = 22
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_constants/line_spacing = 8
-text = "캐릭터 설명"
-autowrap_mode = 2
-
-[node name="CharScrollIndicators" type="Control" parent="."]
-layout_mode = 0
-offset_left = 760.0
-offset_top = 360.0
-offset_right = 820.0
-offset_bottom = 540.0
-script = ExtResource("4_indicators")
-
-[node name="CharacterSlot" type="Control" parent="."]
+[node name="RightArea" type="Control" parent="."]
 layout_mode = 1
-anchors_preset = 6
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="CharPlaceholder" type="ColorRect" parent="RightArea"]
+layout_mode = 1
+anchors_preset = 7
 anchor_left = 1.0
 anchor_top = 0.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -1070.0
+offset_left = -480.0
 offset_top = 0.0
 offset_right = 0.0
 offset_bottom = 0.0
+color = Color(0.85, 0.85, 0.85, 1)
 
-[node name="CharPlaceholder" type="ColorRect" parent="CharacterSlot"]
+[node name="FadeOut" type="TextureRect" parent="RightArea"]
 layout_mode = 1
 anchors_preset = 7
-anchor_left = 0.5
+anchor_left = 1.0
 anchor_top = 0.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -267.5
-offset_top = 0.0
-offset_right = 267.5
-offset_bottom = 0.0
-color = Color(1, 1, 1, 1)
+anchor_right = 1.0
+anchor_bottom = 0.0
+offset_left = -480.0
+offset_top = 800.0
+offset_right = 0.0
+offset_bottom = 280.0
+expand_mode = 1
+stretch_mode = 5
+texture = SubResource("GradientTexture1D_fade")
 
-[node name="FadeOverlay" type="ColorRect" parent="CharacterSlot"]
+[node name="EclipseUI" type="Control" parent="."]
+position = Vector2(380, 340)
+layout_mode = 0
+script = ExtResource("3_eclipse")
+z_index = 0
+
+[node name="SunNode" type="Node2D" parent="EclipseUI"]
+position = Vector2(0, 0)
+script = ExtResource("4_sun")
+
+[node name="MoonNode" type="Node2D" parent="EclipseUI/SunNode"]
+position = Vector2(0, 0)
+script = ExtResource("5_moon")
+mask_color = Color(0, 0, 0, 1)
+
+[node name="LeftArea" type="Control" parent="."]
 layout_mode = 1
-anchors_preset = 7
-anchor_left = 0.5
+anchors_preset = 4
+anchor_left = 0.0
 anchor_top = 0.0
-anchor_right = 0.5
+anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -267.5
-offset_top = 0.0
-offset_right = 267.5
-offset_bottom = 0.0
-color = Color(1, 1, 1, 1)
-material = SubResource("ShaderMaterial_fade")
+offset_right = -480.0
+z_index = 5
+
+[node name="TabDots" type="Node2D" parent="."]
+position = Vector2(950, 700)
+script = ExtResource("6_dots")
+z_index = 10
+
+[node name="InfoPanel" type="Control" parent="LeftArea"]
+layout_mode = 0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="PageTitle" type="Label" parent="LeftArea/InfoPanel"]
+layout_mode = 0
+offset_left = 80.0
+offset_top = 180.0
+offset_right = 280.0
+offset_bottom = 212.0
+theme_override_font_sizes/font_size = 24
+theme_override_colors/font_color = Color(1, 1, 1, 0.5)
+text = "캐릭터 정보"
+
+[node name="CharNameLabel" type="Label" parent="LeftArea/InfoPanel"]
+layout_mode = 0
+offset_left = 80.0
+offset_top = 240.0
+offset_right = 400.0
+offset_bottom = 300.0
+theme_override_font_sizes/font_size = 52
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+text = "선인 (仙人)"
+
+[node name="RoleLabel" type="Label" parent="LeftArea/InfoPanel"]
+layout_mode = 0
+offset_left = 80.0
+offset_top = 310.0
+offset_right = 300.0
+offset_bottom = 340.0
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_color = Color(1, 1, 1, 0.5)
+text = "링크 거점"
+
+[node name="Divider" type="Node2D" parent="LeftArea/InfoPanel"]
+position = Vector2(80, 360)
+script = ExtResource("2_divider")
+
+[node name="DescLabel" type="Label" parent="LeftArea/InfoPanel"]
+layout_mode = 0
+offset_left = 80.0
+offset_top = 375.0
+offset_right = 680.0
+offset_bottom = 880.0
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_constants/line_spacing = 10
+text = "결계 강화: 본인이 속한 링크 라인의 내구도 +50%"
+autowrap_mode = 2
+text_overrun_behavior = 3
+
+[node name="DescScroll" type="ScrollContainer" parent="LeftArea/InfoPanel"]
+visible = false
+layout_mode = 0
+offset_left = 80.0
+offset_top = 360.0
+offset_right = 680.0
+offset_bottom = 760.0
+custom_minimum_size = Vector2(600, 400)
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 3
+
+[node name="DescWrap" type="VBoxContainer" parent="LeftArea/InfoPanel/DescScroll"]
+layout_mode = 2
+theme_override_constants/separation = 0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="DescLabelScroll" type="Label" parent="LeftArea/InfoPanel/DescScroll/DescWrap"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 0
+custom_minimum_size = Vector2(560, 0)
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_constants/line_spacing = 10
+text = "결계 강화: 본인이 속한 링크 라인의 내구도 +50%"
+autowrap_mode = 2
+text_overrun_behavior = 3
+
+[node name="SkillIconsPanel" type="Control" parent="LeftArea"]
+visible = false
+layout_mode = 0
+offset_left = 0.0
+offset_top = 280.0
+offset_right = 800.0
+offset_bottom = 420.0
+script = ExtResource("7_skills")
+
+[node name="StatsPanel" type="Control" parent="LeftArea"]
+visible = false
+layout_mode = 0
+offset_left = 80.0
+offset_top = 340.0
+offset_right = 680.0
+offset_bottom = 700.0
+script = ExtResource("8_stats")
+

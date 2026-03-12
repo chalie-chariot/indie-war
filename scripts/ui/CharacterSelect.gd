@@ -407,8 +407,8 @@ func _on_detail_button_gui_input(event: InputEvent) -> void:
 	_on_detail_click()
 
 func _on_detail_click() -> void:
-	if selected_index == 0:
-		get_tree().change_scene_to_file("res://scenes/ui/CharacterInfo.tscn")
+	GameState.selected_character_index = selected_index
+	get_tree().change_scene_to_file("res://scenes/ui/CharacterInfo.tscn")
 
 func _scroll_to_page(p: int) -> void:
 	page_index = clampi(p, 0, _max_page)
