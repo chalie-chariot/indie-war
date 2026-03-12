@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://cx8k2m4n70ar0"]
+
+[ext_resource type="Script" path="res://scripts/DirectionSelectOverlay.gd" id="1_overlay"]
+
+[node name="DirectionSelectOverlay" type="CanvasLayer"]
+script = ExtResource("1_overlay")

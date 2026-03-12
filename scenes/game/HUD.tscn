@@ -1,3 +1,109 @@
-[gd_scene format=3 uid="uid://d4ly0n5o7a9sy"]
+[gd_scene load_steps=2 format=3 uid="uid://d4ly0n5o7a9sy"]
+
+[ext_resource type="Script" path="res://scripts/HUD.gd" id="1_hud"]
 
 [node name="HUD" type="CanvasLayer"]
+script = ExtResource("1_hud")
+
+[node name="TopRow" type="HBoxContainer" parent="."]
+layout_mode = 3
+anchors_preset = 10
+anchor_top = 0.0
+anchor_right = 1.0
+anchor_bottom = 0.0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = 60.0
+theme_override_constants/separation = 40
+
+[node name="TurnLabel" type="Label" parent="TopRow"]
+layout_mode = 2
+size_flags_horizontal = 0
+text = "플레이어 턴"
+
+[node name="SpacerLeft" type="Control" parent="TopRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TurnCountLabel" type="Label" parent="TopRow"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "턴: 1"
+
+[node name="SpacerRight" type="Control" parent="TopRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="EclipseBox" type="VBoxContainer" parent="TopRow"]
+layout_mode = 2
+
+[node name="EclipseLabel" type="Label" parent="TopRow/EclipseBox"]
+layout_mode = 2
+text = "개기월식"
+
+[node name="EclipseGauge" type="ProgressBar" parent="TopRow/EclipseBox"]
+custom_minimum_size = Vector2(150, 24)
+layout_mode = 2
+max_value = 100.0
+value = 0.0
+show_percentage = false
+
+[node name="UnitInfoPanel" type="PanelContainer" parent="."]
+layout_mode = 3
+anchors_preset = 3
+anchor_left = 0.0
+anchor_top = 1.0
+anchor_right = 0.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = -120.0
+offset_right = 220.0
+offset_bottom = -20.0
+
+[node name="MarginContainer" type="MarginContainer" parent="UnitInfoPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 8
+
+[node name="VBox" type="VBoxContainer" parent="UnitInfoPanel/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="UnitNameLabel" type="Label" parent="UnitInfoPanel/MarginContainer/VBox"]
+layout_mode = 2
+text = "-"
+
+[node name="HPLabel" type="Label" parent="UnitInfoPanel/MarginContainer/VBox"]
+layout_mode = 2
+text = "HP: -"
+
+[node name="UnitAPLabel" type="Label" parent="UnitInfoPanel/MarginContainer/VBox"]
+layout_mode = 2
+text = "AP: -"
+
+[node name="SkillRow" type="HBoxContainer" parent="."]
+layout_mode = 3
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 1400.0
+offset_top = -60.0
+offset_right = 1870.0
+offset_bottom = -10.0
+theme_override_constants/separation = 10
+
+[node name="QButton" type="Button" parent="SkillRow"]
+custom_minimum_size = Vector2(80, 50)
+layout_mode = 2
+text = "Q"
+
+[node name="TurnEndButton" type="Button" parent="SkillRow"]
+custom_minimum_size = Vector2(200, 50)
+layout_mode = 2
+text = "턴 종료"
+
+[connection signal="pressed" from="SkillRow/QButton" to="." method="_on_q_button_pressed"]
+[connection signal="pressed" from="SkillRow/TurnEndButton" to="." method="_on_turn_end_pressed"]

@@ -1,3 +1,14 @@
-[gd_scene format=3 uid="uid://b2kx8m3n5y7qw"]
+[gd_scene load_steps=5 format=3 uid="uid://b2kx8m3n5y7qw"]
+
+[ext_resource type="PackedScene" uid="uid://c3kx9m4n6z8rx" path="res://scenes/game/Map.tscn" id="1_map"]
+[ext_resource type="Script" path="res://scripts/TurnManager.gd" id="2_tm"]
+[ext_resource type="PackedScene" uid="uid://d4ly0n5o7a9sy" path="res://scenes/game/HUD.tscn" id="3_hud"]
+[ext_resource type="PackedScene" uid="uid://cr7k3m5n8z0sa" path="res://scenes/ui/ResultOverlay.tscn" id="4_result"]
 
 [node name="GameManager" type="Node"]
+[node name="Map" parent="." instance=ExtResource("1_map")]
+[node name="TurnManager" type="Node" parent="."]
+groups = ["turn_manager"]
+script = ExtResource("2_tm")
+[node name="HUD" parent="." instance=ExtResource("3_hud")]
+[node name="ResultOverlay" parent="." instance=ExtResource("4_result")]
