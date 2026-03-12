@@ -110,6 +110,14 @@ func _start_press_blink() -> void:
 	_blink_tween.tween_property(press_any_key, "modulate:a", 1.0, 0.6).set_ease(Tween.EASE_IN_OUT)
 
 func _input(event: InputEvent) -> void:
+	# 숫자 1: 계기월식 타이틀 스킵
+	if event is InputEventKey:
+		var ke := event as InputEventKey
+		if ke.pressed and not ke.echo:
+			if ke.keycode == KEY_1 or ke.keycode == KEY_KP_1:
+				get_tree().change_scene_to_file("res://scenes/ui/MainMenu.tscn")
+				accept_event()
+				return
 	if not intro_done:
 		return
 	if event is InputEventKey or event is InputEventMouseButton:

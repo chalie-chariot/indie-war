@@ -1,0 +1,302 @@
+[gd_scene load_steps=5 format=3 uid="uid://daphdxk4a87jt"]
+
+[ext_resource type="Script" path="res://scripts/ui/CharacterSelect.gd" id="1_main"]
+[ext_resource type="Script" path="res://scripts/ui/DiamondPair.gd" id="2_diamond"]
+[ext_resource type="Script" path="res://scripts/ui/PageDots.gd" id="3_dots"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_card_white"]
+bg_color = Color(1, 1, 1, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_card_gray"]
+bg_color = Color(0.2, 0.2, 0.2, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="CharacterSelect" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_main")
+
+[node name="BgRect" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0, 0, 0, 1)
+
+[node name="CharacterDisplay" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_top = 0.0
+anchor_bottom = 0.0
+offset_left = -160.0
+offset_top = 140.0
+offset_right = 160.0
+offset_bottom = 560.0
+mouse_default_cursor_shape = 2
+
+[node name="CharSprite" type="ColorRect" parent="CharacterDisplay"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_top = 0.0
+anchor_bottom = 0.0
+offset_left = -80.0
+offset_top = 20.0
+offset_right = 80.0
+offset_bottom = 300.0
+color = Color(1, 1, 1, 1)
+
+[node name="CharNameLabel" type="Label" parent="CharacterDisplay"]
+layout_mode = 0
+offset_left = 40.0
+offset_top = 320.0
+offset_right = 280.0
+offset_bottom = 356.0
+theme_override_font_sizes/font_size = 36
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+text = "이름"
+horizontal_alignment = 1
+
+[node name="DetailButton" type="Control" parent="."]
+layout_mode = 0
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 120.0
+offset_bottom = 36.0
+mouse_default_cursor_shape = 2
+
+[node name="DiamondPair" type="Node2D" parent="DetailButton"]
+position = Vector2(14, 18)
+script = ExtResource("2_diamond")
+
+[node name="DetailLabel" type="Label" parent="DetailButton"]
+layout_mode = 0
+offset_left = 36.0
+offset_top = 8.0
+offset_right = 116.0
+offset_bottom = 28.0
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(1, 1, 1, 0.7)
+text = "상세보기"
+vertical_alignment = 1
+
+[node name="CardStrip" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -500.0
+offset_top = -440.0
+offset_right = 500.0
+offset_bottom = -320.0
+alignment = 1
+theme_override_constants/separation = 16
+
+[node name="CardRow" type="HBoxContainer" parent="CardStrip"]
+layout_mode = 2
+size_flags_horizontal = 0
+alignment = 1
+theme_override_constants/separation = 16
+
+[node name="CardA" type="VBoxContainer" parent="CardStrip/CardRow"]
+custom_minimum_size = Vector2(80, 100)
+layout_mode = 2
+rotation = 0.0523599
+
+[node name="CardRect" type="Panel" parent="CardStrip/CardRow/CardA"]
+custom_minimum_size = Vector2(80, 86)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_card_white")
+
+[node name="CardLabel" type="Label" parent="CardStrip/CardRow/CardA"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+text = "A"
+horizontal_alignment = 1
+
+[node name="CardB" type="VBoxContainer" parent="CardStrip/CardRow"]
+custom_minimum_size = Vector2(80, 100)
+layout_mode = 2
+rotation = 0.0523599
+
+[node name="CardRect" type="Panel" parent="CardStrip/CardRow/CardB"]
+custom_minimum_size = Vector2(80, 86)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_card_white")
+
+[node name="CardLabel" type="Label" parent="CardStrip/CardRow/CardB"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+text = "B"
+horizontal_alignment = 1
+
+[node name="CardC" type="VBoxContainer" parent="CardStrip/CardRow"]
+custom_minimum_size = Vector2(80, 100)
+layout_mode = 2
+rotation = 0.0523599
+
+[node name="CardRect" type="Panel" parent="CardStrip/CardRow/CardC"]
+custom_minimum_size = Vector2(80, 86)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_card_white")
+
+[node name="CardLabel" type="Label" parent="CardStrip/CardRow/CardC"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+text = "C"
+horizontal_alignment = 1
+
+[node name="CardD" type="VBoxContainer" parent="CardStrip/CardRow"]
+custom_minimum_size = Vector2(80, 100)
+layout_mode = 2
+rotation = 0.0523599
+
+[node name="CardRect" type="Panel" parent="CardStrip/CardRow/CardD"]
+custom_minimum_size = Vector2(80, 86)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_card_white")
+
+[node name="CardLabel" type="Label" parent="CardStrip/CardRow/CardD"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+text = "D"
+horizontal_alignment = 1
+
+[node name="CardE" type="VBoxContainer" parent="CardStrip/CardRow"]
+custom_minimum_size = Vector2(80, 100)
+layout_mode = 2
+rotation = 0.0523599
+
+[node name="CardRect" type="Panel" parent="CardStrip/CardRow/CardE"]
+custom_minimum_size = Vector2(80, 86)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_card_white")
+
+[node name="CardLabel" type="Label" parent="CardStrip/CardRow/CardE"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+text = "E"
+horizontal_alignment = 1
+
+[node name="CardF" type="VBoxContainer" parent="CardStrip/CardRow"]
+custom_minimum_size = Vector2(80, 100)
+layout_mode = 2
+rotation = 0.0523599
+
+[node name="CardRect" type="Panel" parent="CardStrip/CardRow/CardF"]
+custom_minimum_size = Vector2(80, 86)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_card_gray")
+
+[node name="CardLabel" type="Label" parent="CardStrip/CardRow/CardF"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+text = "F"
+horizontal_alignment = 1
+
+[node name="CardEmpty1" type="VBoxContainer" parent="CardStrip/CardRow"]
+custom_minimum_size = Vector2(80, 100)
+layout_mode = 2
+rotation = 0.0523599
+
+[node name="CardRect" type="Panel" parent="CardStrip/CardRow/CardEmpty1"]
+custom_minimum_size = Vector2(80, 86)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_card_gray")
+
+[node name="CardLabel" type="Label" parent="CardStrip/CardRow/CardEmpty1"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.5, 0.5, 0.5, 1)
+text = "-"
+horizontal_alignment = 1
+
+[node name="CardEmpty2" type="VBoxContainer" parent="CardStrip/CardRow"]
+custom_minimum_size = Vector2(80, 100)
+layout_mode = 2
+rotation = 0.0523599
+
+[node name="CardRect" type="Panel" parent="CardStrip/CardRow/CardEmpty2"]
+custom_minimum_size = Vector2(80, 86)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_card_gray")
+
+[node name="CardLabel" type="Label" parent="CardStrip/CardRow/CardEmpty2"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.5, 0.5, 0.5, 1)
+text = "-"
+horizontal_alignment = 1
+
+[node name="CardEmpty3" type="VBoxContainer" parent="CardStrip/CardRow"]
+custom_minimum_size = Vector2(80, 100)
+layout_mode = 2
+rotation = 0.0523599
+
+[node name="CardRect" type="Panel" parent="CardStrip/CardRow/CardEmpty3"]
+custom_minimum_size = Vector2(80, 86)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_card_gray")
+
+[node name="CardLabel" type="Label" parent="CardStrip/CardRow/CardEmpty3"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.5, 0.5, 0.5, 1)
+text = "-"
+horizontal_alignment = 1
+
+[node name="CardEmpty4" type="VBoxContainer" parent="CardStrip/CardRow"]
+custom_minimum_size = Vector2(80, 100)
+layout_mode = 2
+rotation = 0.0523599
+
+[node name="CardRect" type="Panel" parent="CardStrip/CardRow/CardEmpty4"]
+custom_minimum_size = Vector2(80, 86)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_card_gray")
+
+[node name="CardLabel" type="Label" parent="CardStrip/CardRow/CardEmpty4"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.5, 0.5, 0.5, 1)
+text = "-"
+horizontal_alignment = 1
+
+[node name="NextArrow" type="Button" parent="CardStrip"]
+custom_minimum_size = Vector2(44, 60)
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "▶"
+
+[node name="PageDots" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -100.0
+offset_top = -100.0
+offset_right = 100.0
+offset_bottom = -70.0
+script = ExtResource("3_dots")

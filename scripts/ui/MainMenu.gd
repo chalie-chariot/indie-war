@@ -109,7 +109,7 @@ func _execute_current_menu() -> void:
 		0:
 			get_tree().change_scene_to_file("res://scenes/game/GameManager.tscn")
 		1:
-			get_tree().change_scene_to_file("res://scenes/ui/CharacterInfo.tscn")
+			get_tree().change_scene_to_file("res://scenes/ui/CharacterSelect.tscn")
 		2:
 			print("세계관 개요 미구현")
 		3:
