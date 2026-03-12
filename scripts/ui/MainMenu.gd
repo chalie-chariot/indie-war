@@ -44,6 +44,10 @@ func _input(event: InputEvent) -> void:
 				accept_event()
 				_change_menu(1)
 				return
+			if title_label and title_label.get_global_rect().has_point(pos):
+				accept_event()
+				_execute_current_menu()
+				return
 	if event is InputEventKey:
 		var ke: InputEventKey = event as InputEventKey
 		if ke.pressed and not ke.echo:
@@ -105,7 +109,7 @@ func _execute_current_menu() -> void:
 		0:
 			get_tree().change_scene_to_file("res://scenes/game/GameManager.tscn")
 		1:
-			print("캐릭터 정보 미구현")
+			get_tree().change_scene_to_file("res://scenes/ui/CharacterInfo.tscn")
 		2:
 			print("세계관 개요 미구현")
 		3:
