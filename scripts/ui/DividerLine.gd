@@ -1,5 +1,5 @@
 extends Control
-## 라인 세그먼트 - 기본 선만
+## 라인 세그먼트 - 기본선만
 
 func _draw() -> void:
 	var cy: float = size.y / 2.0
